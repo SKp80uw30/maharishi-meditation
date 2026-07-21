@@ -42,7 +42,7 @@ export default function App() {
       {state.screen === 'intention' && <IntentionScreen dispatch={dispatch} />}
       {state.screen === 'duration' && <DurationScreen state={state} dispatch={dispatch} />}
       {state.screen === 'session' && <SessionScreen state={state} dispatch={dispatch} />}
-      {state.screen === 'stats' && <StatsScreen dispatch={dispatch} />}
+      {state.screen === 'stats' && <StatsScreen state={state} dispatch={dispatch} />}
       {state.screen === 'about' && <AboutScreen dispatch={dispatch} />}
     </SafeAreaProvider>
   );

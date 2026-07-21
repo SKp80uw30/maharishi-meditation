@@ -155,15 +155,26 @@ move on. Don't check a box without actually running its gate.
     compile against the *real* (unmocked) `expo-audio` + audio asset. Actual
     audible playback is a manual spot-check, not part of the automated gate.
 
-- [ ] **Phase 8 — Stats screen + API client**
-  - `app/src/api/worldPeace.ts`: typed interface (`increment()`, `getStats()`)
-    behind a swappable implementation; MVP default = in-memory mock so the app is
-    fully usable offline before the real backend exists
-  - Stats screen calls `increment()` once on mount (see CLAUDE.md "API contract"),
-    then `getStats()`, renders the two stat cards + "Meditate again" (loops to
-    Duration per README)
-  - **Gate:** mocked-client tests (increment called exactly once per arrival,
-    correct render of returned totals) + screenshot
+- [x] **Phase 8 — Stats screen + API client**
+  - `app/src/api/worldPeace.ts`: `WorldPeaceApiClient` interface
+    (`increment()`, `getStats()`) + `createMockWorldPeaceApi(seed)` factory (each
+    instance owns its own state — no shared module singleton to leak between
+    tests); `worldPeaceApi` is the mock instance the app actually uses until
+    Phase 11. Seeded with the design mockup's example numbers (12,483 /
+    1,204,996) so the app feels like part of something larger even offline.
+  - Stats screen calls `increment()` once on mount, then `getStats()`
+    (`apiClient` is an injectable prop, defaulting to the real singleton, for
+    test isolation without module mocking); renders the two stat cards +
+    "Meditate again" → `RESTART`. A failed fetch degrades to a "—" placeholder
+    rather than blocking the ritual — stats are inspirational, not load-bearing,
+    consistent with the PRD's minimal-backend philosophy.
+  - Fixed a wiring gap from Phase 2's placeholder: `App.tsx` was only passing
+    `dispatch` to `StatsScreen`, not `state` — needed now for the duration-aware
+    thank-you copy
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (53/53: increment fires
+    exactly once and totals render correctly, timed vs. Open thank-you copy,
+    RESTART dispatches, and a rejecting client degrades to placeholders without
+    crashing or blocking "Meditate again") · bundle fetch confirms clean compile
 
 - [ ] **Phase 9 — About screen**
   - Privacy card + practice card + version footer, reachable from Launch's info
