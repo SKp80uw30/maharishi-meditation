@@ -225,16 +225,38 @@ move on. Don't check a box without actually running its gate.
   - **Gate:** integration test against `netlify dev` (or the deployed URL) confirms
     increment + stats round-trip correctly
 
-- [ ] **Phase 12 — Full-flow QA pass**
-  - Scripted Playwright walk of the entire flow end-to-end on `expo start --web`;
-    screenshot set of all 6 screens saved for a final visual compare against
-    `reference_hifi_mockups.dc.html`
-  - All prior test suites green in both `app/` and `backend/`
-  - Optional: one iOS Simulator spot-check via the xcode MCP tools for a
-    native-feel sanity check
-  - Send the user the final screenshot set + a summary of anything still manual
-    (real Upstash/Netlify credentials if not supplied in Phase 11, real brand
-    audio/icons/font files to swap in for the placeholders)
+- [x] **Phase 12 — Full-flow QA pass**
+  - **Playwright MCP tool itself never worked this session** ("Connection
+    closed" on every `browser_navigate` call, likely can't spawn a browser
+    process in this sandbox) — worked around it by installing/running
+    Playwright directly via a plain Node script through Bash instead of the MCP
+    tool, which worked fine. Real screenshots, not a placeholder workaround.
+  - Scripted a full click-through on `expo start --web`: Launch → Begin →
+    Intention → Begin your session → Duration → select 3 min → Begin meditation
+    → Session → End early → Stats → Meditate again → back to Duration (freshly
+    reset) → Back → Back → Launch → ⓘ → About. Zero console/page errors the
+    whole way. Screenshots of all 6 screens sent to the user.
+  - **Bug found and fixed during this pass:** `BlobMark` looked like it had a
+    solid white square behind it at full-page zoom. Traced it properly rather
+    than guessing — `getComputedStyle` confirmed the View/Svg were genuinely
+    transparent, and a tight high-DPI crop of just the element showed it's the
+    *correct*, *expected* behavior of an organic blob shape inscribed in a
+    square viewBox: the shape's own corners don't reach the box's true corner
+    points (same as the reference design's CSS `border-radius` technique — any
+    rounded/blob shape leaves its bounding box's corners showing whatever's
+    behind it). What looked like a bug was page-background contrast making
+    those corner gaps read as a faint outline at small preview size. Reverted
+    the (unneeded) fix attempts; kept the explicit `backgroundColor:
+    'transparent'` hygiene since it's correct regardless.
+  - Confirmed live in the running app (not just unit tests): the mock API
+    client's counts actually increment session-to-session (12,483→12,484,
+    1,204,996→1,204,997), and "Meditate again" really does reset the duration
+    selection before landing back on Duration.
+  - All prior test suites green in both `app/` (55/55) and `backend/` (10/10) —
+    65 tests total.
+  - Did not do a separate iOS Simulator spot-check — the web QA pass was thorough
+    enough (real screenshots, real click-through, zero errors) that it wasn't
+    needed; worth doing before a real device/store submission, not blocking here.
 
 - [ ] **Phase 13 — (stretch, optional) Build readiness**
   - App icon/splash assets, `app.json` metadata, EAS build config for real-device

@@ -17,12 +17,10 @@ type Props = {
  * gradient. Used on Launch (120px, glowing) and Stats (64px, no glow). */
 export default function BlobMark({ size = 120, glow = true }: Props) {
   const path = blobPath(size);
+  const boxStyle = { width: size, height: size, backgroundColor: 'transparent' as const };
   return (
-    <View
-      style={glow ? { width: size, height: size, boxShadow: shadow.glowCoral } : { width: size, height: size }}
-      testID="blob-mark"
-    >
-      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+    <View style={glow ? { ...boxStyle, boxShadow: shadow.glowCoral } : boxStyle} testID="blob-mark">
+      <Svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} style={{ backgroundColor: 'transparent' }}>
         <Defs>
           <LinearGradient
             id="sunrise"
