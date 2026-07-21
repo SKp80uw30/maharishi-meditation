@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
 import { Button, ProgressRing, ScreenContainer } from '../components';
 import { useSessionTimer, formatClock } from '../hooks/useSessionTimer';
+import { useAmbientLoop } from '../hooks/useAmbientLoop';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, tracking } from '../theme/typography';
 import { radius, space } from '../theme/spacing';
@@ -24,6 +25,8 @@ export default function SessionScreen({
     duration,
     onFinish: () => dispatch({ type: 'FINISH_SESSION' }),
   });
+
+  useAmbientLoop(state.soundOn);
 
   return (
     <ScreenContainer variant="dark" wash="duskGlow" style={styles.container} testID="screen-session">

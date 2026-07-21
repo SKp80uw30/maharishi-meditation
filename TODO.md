@@ -130,15 +130,30 @@ move on. Don't check a box without actually running its gate.
     up indefinitely and never finishes, screen wiring/copy/sound-toggle all
     correct) · bundle fetch confirms clean compile
 
-- [ ] **Phase 7 — Ambient audio**
-  - Synthesize a seamless placeholder ambient loop locally via ffmpeg (soft pad/tone,
-    clearly commented as a placeholder pending real brand audio), save to
-    `app/assets/audio/`
-  - Wire to `expo-audio`'s `useAudioPlayer`, tied to `soundOn` + screen focus (stops
-    on leaving Session, per README "sound toggle... session-scoped")
-  - **Gate:** unit tests with the audio module mocked (play called when
-    soundOn+mounted, stopped on unmount/toggle-off) — actual audible check is a
-    manual spot-check, not part of the automated gate
+- [x] **Phase 7 — Ambient audio**
+  - Synthesized a seamless 30s placeholder loop with ffmpeg
+    (`app/assets/audio/ambient-loop.mp3`, regeneration command + rationale in its
+    own README) — a soft drone (110/165/220Hz + slow tremolo), all frequencies
+    exact integer multiples of `1/30s` so the waveform is perfectly periodic over
+    the file length: loops with no click at the seam, no third-party licensing
+    question since nothing was sourced
+  - `app/src/hooks/useAmbientLoop.ts` wraps `expo-audio`'s `useAudioPlayer`,
+    `player.loop = true`, play/pause tied to `soundOn`; stops automatically on
+    leaving Session since expo-audio releases the player on unmount
+  - **Toolchain finding:** expo-audio registers a native module at import time
+    that doesn't exist under Jest — any test that renders `SessionScreen` (now or
+    later, e.g. Phase 12's full-flow test) needs it mocked. Added a shared manual
+    mock (`app/__mocks__/expo-audio.ts` + jest `moduleNameMapper`) instead of
+    duplicating a local `jest.mock()` per test file
+  - **Also fixed:** `expo-audio`, `expo-linear-gradient`, `react-native-svg` had
+    landed in `devDependencies` from earlier `--dev` installs — moved to
+    `dependencies` since they're genuine runtime deps of the shipped app
+  - **Gate — passed:** `tsc --noEmit` clean (confirmed `player.loop` against the
+    real shipped types) · `jest` (45/45: hook enables looping + plays when
+    active, pauses when inactive/toggled off; SessionScreen actually calls
+    play()/pause() correctly based on `soundOn`) · bundle fetch confirms clean
+    compile against the *real* (unmocked) `expo-audio` + audio asset. Actual
+    audible playback is a manual spot-check, not part of the automated gate.
 
 - [ ] **Phase 8 — Stats screen + API client**
   - `app/src/api/worldPeace.ts`: typed interface (`increment()`, `getStats()`)

@@ -2,6 +2,7 @@ import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import SessionScreen from '../SessionScreen';
 import { initialState } from '../../state/appReducer';
+import { mockAudioPlayer, resetMockAudioPlayer } from '../../../__mocks__/expo-audio';
 
 async function advanceSeconds(n: number) {
   for (let i = 0; i < n; i++) {
@@ -14,6 +15,7 @@ async function advanceSeconds(n: number) {
 describe('SessionScreen', () => {
   beforeEach(() => {
     jest.useFakeTimers();
+    resetMockAudioPlayer();
   });
 
   afterEach(() => {
@@ -91,5 +93,22 @@ describe('SessionScreen', () => {
 
     expect(screen.queryByText(/A gentle ambient tone plays as you go\./)).toBeNull();
     expect(screen.getByRole('button', { name: 'Sound off' })).toBeTruthy();
+  });
+
+  it('actually plays the ambient loop when soundOn is true, and pauses (not plays) when false', async () => {
+    const dispatch = jest.fn();
+    const { unmount } = await render(
+      <SessionScreen state={{ ...initialState, screen: 'session', duration: 5, soundOn: true }} dispatch={dispatch} />
+    );
+    expect(mockAudioPlayer.play).toHaveBeenCalledTimes(1);
+    expect(mockAudioPlayer.pause).not.toHaveBeenCalled();
+    await unmount();
+
+    resetMockAudioPlayer();
+    await render(
+      <SessionScreen state={{ ...initialState, screen: 'session', duration: 5, soundOn: false }} dispatch={dispatch} />
+    );
+    expect(mockAudioPlayer.pause).toHaveBeenCalledTimes(1);
+    expect(mockAudioPlayer.play).not.toHaveBeenCalled();
   });
 });
