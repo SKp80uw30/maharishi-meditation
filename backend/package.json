@@ -1,0 +1,10 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Anonymous aggregate counting service for the World Peace meditation MVP. Two endpoints only: increment and read stats. No user data, no schema beyond Redis counters. See ../CLAUDE.md and ../maharishi-meditation-prd.md for the full contract. Implemented in Phase 10 of TODO.md.",
+  "scripts": {
+    "test": "jest",
+    "typecheck": "tsc --noEmit"
+  }
+}
