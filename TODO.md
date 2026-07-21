@@ -176,10 +176,13 @@ move on. Don't check a box without actually running its gate.
     RESTART dispatches, and a rejecting client degrades to placeholders without
     crashing or blocking "Meditate again") · bundle fetch confirms clean compile
 
-- [ ] **Phase 9 — About screen**
+- [x] **Phase 9 — About screen**
   - Privacy card + practice card + version footer, reachable from Launch's info
-    affordance (added in Phase 3)
-  - **Gate:** render test + screenshot
+    affordance (added in Phase 3). All 6 screens from the design handoff are now
+    built and wired into the app shell.
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (55/55: privacy/practice
+    copy and version footer present, BACK dispatches correctly) · bundle fetch
+    confirms clean compile
 
 - [ ] **Phase 10 — Backend: Netlify Function + Upstash Redis**
   - `backend/netlify/functions/`: increment handler (`INCR wp:total:all`,
