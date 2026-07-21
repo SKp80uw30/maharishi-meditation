@@ -18,18 +18,27 @@ move on. Don't check a box without actually running its gate.
   - **Gate (all passed):** `npx tsc --noEmit` clean · `npx jest` (1/1 smoke test
     passed) · `CI=1 npx expo start --web` boots and serves 200 on :8081
 
-- [ ] **Phase 1 — Design tokens & primitive components**
-  - Port `design_handoff_world_peace_mvp/tokens/*.css` verbatim into
-    `app/src/theme/{colors,typography,spacing,effects}.ts`
-  - Build primitives in `app/src/components/`: `Button` (primary pill / secondary
-    outline, per Launch/Intention/Duration/Stats/Session button variants), `Card`,
-    `ScreenContainer`, `BlobMark` (svg, approximates the CSS blob radius), `GradientGlow`
-    (svg radial, light screens) / `GradientSunrise` (linear, hero marks) /
-    `GradientDuskGlow` (svg radial, session screen), `ProgressRing` (svg, conic-style
-    arc via stroke-dasharray)
-  - Delete the placeholder `src/__tests__/smoke.test.ts` once real tests exist
-  - **Gate:** `npx tsc --noEmit` clean · `npx jest` — render test per primitive
-    (renders without throwing, applies expected style/props)
+- [x] **Phase 1 — Design tokens & primitive components**
+  - Ported `tokens/*.css` verbatim into `app/src/theme/{colors,typography,spacing,
+    effects}.ts` (+ `blobPath.ts`, an exact SVG elliptical-arc reproduction of the
+    CSS `--radius-blob` shorthand — the four corner radii sum to exactly 100% per
+    edge, so no CSS overlap-scaling was needed to be exact)
+  - Discovered while porting: RN's `boxShadow` style prop (CSS box-shadow syntax,
+    New Architecture) supports the tokens' multi-layer shadows verbatim — used
+    instead of the legacy shadowColor/shadowOffset/shadowOpacity/elevation quintet
+  - Built primitives in `app/src/components/`: `Button` (primary pill / outline,
+    the latter only used for Session's End early/End session), `Card`,
+    `ScreenContainer` (background + optional radial wash + safe-area, via
+    `react-native-safe-area-context` — the RN-core `SafeAreaView` is deprecated),
+    `BlobMark` (svg + linear gradient), `GradientWash` (svg radial, `glow` |
+    `duskGlow` variants), `ProgressRing` (svg stroke-dasharray ring — RN/SVG has no
+    conic-gradient, so this reproduces the design's conic-arc-behind-inner-circle
+    trick with the standard stroke-ring technique instead, same visual result)
+  - Installed for this phase: `react-native-svg`, `expo-linear-gradient`,
+    `react-native-safe-area-context`, `expo-font` + `@expo-google-fonts/nunito`
+  - Deleted the placeholder `src/__tests__/smoke.test.ts`
+  - **Gate — passed:** `npx tsc --noEmit` clean · `npx jest` (11/11 passed across
+    6 suites, one per primitive)
 
 - [ ] **Phase 2 — App shell / state machine**
   - `app/src/state/appReducer.ts`: pure reducer over
