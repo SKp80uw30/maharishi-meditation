@@ -216,14 +216,26 @@ move on. Don't check a box without actually running its gate.
     — all against a fake store/Redis double, no live network or credentials
     needed for this phase
 
-- [ ] **Phase 11 — Connect to live backend** ⚠️ needs user's accounts
+- [ ] **Phase 11 — Connect to live backend** ⏸ deferred, by user choice (2026-07-21)
   - Swap the app's mock API client for real HTTP calls via `EXPO_PUBLIC_API_URL`
-  - **Blocked on**: an Upstash Redis database (URL + REST token) and a Netlify site
-    to deploy the function to — these are account-owned resources; ask the user for
-    them (or to provision via the Netlify MCP tools if authorized) when this phase
-    starts, don't guess/fabricate credentials
-  - **Gate:** integration test against `netlify dev` (or the deployed URL) confirms
-    increment + stats round-trip correctly
+  - **Deliberately not blocking the rest of the build**: needs an Upstash Redis
+    database (URL + REST token) and a Netlify site — account-owned resources.
+    Offered three paths (self-provision a temporary dev DB, user supplies their
+    own Netlify/Upstash, or skip for now) — user chose to skip for now since the
+    app is fully functional on the mock backend already. Revisit whenever ready;
+    it's a small, contained change since `app/src/api/worldPeace.ts` already
+    hides the mock vs. real client behind one interface.
+  - **When picking this back up:**
+    1. Create an Upstash Redis database and a Netlify site (or reuse existing
+       ones — this ecosystem already uses Netlify for other projects)
+    2. Set `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as Netlify site
+       env vars (never commit them)
+    3. Deploy `backend/` to that site (`netlify.toml` is already configured)
+    4. Add a real HTTP implementation of `WorldPeaceApiClient` in
+       `app/src/api/worldPeace.ts` (or a new file) that calls the deployed
+       `EXPO_PUBLIC_API_URL`, and switch `worldPeaceApi`'s export to it
+  - **Gate (once resumed):** integration test against `netlify dev` (or the
+    deployed URL) confirms increment + stats round-trip correctly
 
 - [x] **Phase 12 — Full-flow QA pass**
   - **Playwright MCP tool itself never worked this session** ("Connection
