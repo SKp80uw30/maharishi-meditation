@@ -10,7 +10,7 @@ describe('LaunchScreen', () => {
     expect(screen.getByText('Maharishi Meditation')).toBeTruthy();
     expect(screen.getByText('A shared meditation for World Peace.')).toBeTruthy();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'BEGIN' });
   });
 
@@ -18,7 +18,7 @@ describe('LaunchScreen', () => {
     const dispatch = jest.fn();
     await render(<LaunchScreen dispatch={dispatch} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'About' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'About' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'OPEN_ABOUT' });
   });
 });

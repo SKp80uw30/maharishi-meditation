@@ -87,11 +87,23 @@ move on. Don't check a box without actually running its gate.
     present, CONTINUE/BACK dispatch correctly) · bundle fetch confirms clean
     compile
 
-- [ ] **Phase 5 — Duration screen**
-  - 2×2 grid (3/5/10/20 min) + full-width "Open" option, selected/unselected
-    styling per spec, "Begin meditation" gated on a selection being made
-  - **Gate:** interaction tests (selecting each option updates state correctly) +
-    screenshot
+- [x] **Phase 5 — Duration screen**
+  - Explicit 2×2 rows (3/5/10/20 min, not a flex-wrap grid — exact/predictable for
+    exactly four fixed tiles) + full-width "Open" tile below, selected/unselected
+    styling per spec
+  - **Note on "Begin meditation" gating:** left it always tappable (reducer's
+    `START_SESSION` already no-ops if `duration` is still null, per Phase 2's
+    guard) rather than visually disabling the button — matches the JSX reference,
+    which doesn't show a disabled state either
+  - **Toolchain finding (applies retroactively to all prior interaction tests):**
+    `@testing-library/react-native` v14 made `fireEvent.press` async too (wraps in
+    `act()`), same as `render`. Un-awaited calls were producing "overlapping
+    act() calls" console errors that didn't fail tests but were silently
+    unreliable — fixed every call site across all existing test files in this
+    phase, all 32 tests still green with the warnings gone
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (32/32, no console warnings:
+    all 5 options selectable, correct tile shows `accessibilityState.selected`,
+    START_SESSION/BACK dispatch correctly) · bundle fetch confirms clean compile
 
 - [ ] **Phase 6 — Session screen + timer hook**
   - `app/src/hooks/useSessionTimer.ts`: countdown (timed) / count-up (Open),

@@ -7,7 +7,7 @@ describe('Button', () => {
     const onPress = jest.fn();
     await render(<Button label="Begin" onPress={onPress} />);
     expect(screen.getByText('Begin')).toBeTruthy();
-    fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 

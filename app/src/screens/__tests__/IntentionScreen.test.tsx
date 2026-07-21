@@ -10,7 +10,7 @@ describe('IntentionScreen', () => {
     expect(screen.getByText("Today's intention")).toBeTruthy();
     expect(screen.getByText('World Peace & Non-violence')).toBeTruthy();
 
-    fireEvent.press(screen.getByRole('button', { name: 'Begin your session' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Begin your session' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'CONTINUE' });
   });
 
@@ -18,7 +18,7 @@ describe('IntentionScreen', () => {
     const dispatch = jest.fn();
     await render(<IntentionScreen dispatch={dispatch} />);
 
-    fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'BACK' });
   });
 });

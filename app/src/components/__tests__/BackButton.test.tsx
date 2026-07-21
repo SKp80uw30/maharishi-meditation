@@ -6,7 +6,7 @@ describe('BackButton', () => {
   it('fires onPress when tapped', async () => {
     const onPress = jest.fn();
     await render(<BackButton onPress={onPress} />);
-    fireEvent.press(screen.getByRole('button', { name: 'Back' }));
+    await fireEvent.press(screen.getByRole('button', { name: 'Back' }));
     expect(onPress).toHaveBeenCalledTimes(1);
   });
 });
