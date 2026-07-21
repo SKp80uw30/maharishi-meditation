@@ -108,6 +108,31 @@ Split across two layers — deliberately, not everything lives in the global red
   current_active_estimate? }`.
 - No user ID, email, device identity, profile data, or location data in any request.
 
+## Device testing
+
+**Expo Go does not currently work on Steve's iPhone 13** — Expo Go builds are
+pinned 1:1 to a single SDK per release, and the App Store only offers this
+phone a build capped by its installed iOS version, which lands at SDK 54. This
+project is on SDK 57. Not something to "fix" in code — either the phone's iOS
+needs updating (the user's call) or testing needs to go through an EAS
+development build instead of Expo Go (see Phase 13 in `TODO.md`).
+
+**Working fallback (confirmed live, 2026-07-22):** `npx expo start --host lan`
+already serves the web build at its root path (`react-native-web` is
+installed) — point the phone's Safari at `http://<this Mac's Tailscale
+IP>:8081` over Tailscale (`tailscale ip -4` if the IP has changed since) and
+it's fully interactive on the actual device screen. Not true native rendering,
+but the same code — Phase 12's QA pass already confirmed visual fidelity
+between the web build and native. Skip straight to this; don't re-attempt Expo
+Go on this device without a newer iOS/Expo Go first.
+
+If scanning/opening an `exp://` URL is ever relevant again (e.g. once on a
+device where Expo Go does support the SDK): the *system* Camera app can't hand
+custom URL schemes to Expo Go — it treats them as a text search. Scan from
+inside Expo Go's own scanner, or paste the link into Notes/Messages/Mail and
+tap it there (iOS registers custom schemes as tappable links in those apps,
+not in Safari's address bar).
+
 ## Working conventions
 
 - Read `TODO.md` at the start of every session to see current phase status.

@@ -270,8 +270,42 @@ move on. Don't check a box without actually running its gate.
     enough (real screenshots, real click-through, zero errors) that it wasn't
     needed; worth doing before a real device/store submission, not blocking here.
 
+- [x] **Phase 12b — Physical device verification (2026-07-22)**
+  - Tried Expo Go on Steve's iPhone 13: **blocked**. This app is on Expo SDK 57;
+    Expo Go builds are pinned 1:1 to one SDK per release, and the App Store only
+    offers this phone an Expo Go build capped by its installed iOS version — that
+    ceiling lands at SDK 54, not 57. Not fixable from this session (would need an
+    iOS update on the device, the user's call, not something to do unprompted).
+  - Tried three connectivity paths before hitting the SDK wall: USB via
+    `devicectl` (phone got unplugged mid-session), an ngrok tunnel
+    (`npx expo start --tunnel`, needed `@expo/ngrok` installed first), and
+    Tailscale (this Mac's tailnet IP `100.123.223.78`, confirmed reachable via
+    `tailscale ping`). Generated a QR code (`qrencode`, installed via brew) for
+    the `exp://` URL — the *system* Camera app can't hand off custom URL schemes
+    to Expo Go (it tries a web search instead); scanning has to happen from
+    inside Expo Go's own scanner, or the link needs to be tapped from Notes/
+    Messages/Mail, which iOS does register as an openable custom-scheme link.
+  - **Working fallback, used successfully:** the already-running LAN-mode dev
+    server (`npx expo start --host lan`) serves the web build at its root path
+    with no extra flag needed (`react-native-web` was already installed from
+    Phase 0's tooling gate). Pointed the phone's Safari at
+    `http://<tailscale-ip>:8081` over Tailscale — confirmed working by the user,
+    full flow interactive on the actual device screen. Not true native
+    rendering, but the same code, and Phase 12's QA pass already established
+    visual fidelity between the web build and the native design spec.
+  - **For next time testing on this specific phone:** skip Expo Go entirely,
+    go straight to `npx expo start --host lan` + Tailscale + mobile Safari. The
+    Mac's Tailscale IP can change if Tailscale is reset — check with `tailscale
+    ip -4` if `100.123.223.78` stops working. Real native-build testing on this
+    device needs Phase 13's EAS development build instead of Expo Go.
+
 - [ ] **Phase 13 — (stretch, optional) Build readiness**
   - App icon/splash assets, `app.json` metadata, EAS build config for real-device
     testing beyond Expo Go
   - Out of MVP scope per PRD (only requires Expo Go testability) — do this last,
     only if everything above is done and there's time left
+  - **Now has a concrete forcing reason, not just polish:** Phase 12b found that
+    Expo Go itself can't run this app on Steve's iPhone 13 (SDK ceiling tied to
+    its iOS version — see Phase 12b). An EAS development build sidesteps Expo Go
+    entirely and would be the real fix for native (not web-fallback) testing on
+    that device.
