@@ -40,16 +40,26 @@ move on. Don't check a box without actually running its gate.
   - **Gate — passed:** `npx tsc --noEmit` clean · `npx jest` (11/11 passed across
     6 suites, one per primitive)
 
-- [ ] **Phase 2 — App shell / state machine**
+- [x] **Phase 2 — App shell / state machine**
   - `app/src/state/appReducer.ts`: pure reducer over
     `{screen, duration, secondsLeft, secondsElapsed, soundOn}` with actions for the
-    full linear flow (begin, continue, select duration, start session, tick, finish,
-    end early, restart, open/close about, back)
-  - `App.tsx` wires the reducer and switch-renders the current screen (still
-    placeholder screens at this point)
-  - **Gate:** `npx jest` — reducer unit tests cover every transition in the design
-    README's "Interactions & behavior" section, including back nav and the
-    Stats→"Meditate again"→Duration loop
+    full linear flow (BEGIN, CONTINUE, BACK, SELECT_DURATION, START_SESSION, TICK,
+    FINISH_SESSION, END_SESSION_EARLY, TOGGLE_SOUND, RESTART, OPEN_ABOUT) — BACK is
+    screen-contextual (Intention→Launch, Duration→Intention, About→Launch, no-op
+    elsewhere, matching the README's back-arrow rules)
+  - `App.tsx` wires the reducer, loads Nunito via `@expo-google-fonts/nunito` +
+    `useFonts`, wraps in `SafeAreaProvider`, switch-renders the current screen
+  - Added minimal placeholder screens (`app/src/screens/*.tsx`) wired to real
+    dispatch actions — bare text/tap targets, not yet styled; each gets built to
+    the design spec in its own phase (3–9) below
+  - **Gate — passed:** `npx tsc --noEmit` clean · `npx jest` (23/23 passed,
+    reducer covers every transition including back-nav no-ops and the
+    Stats→RESTART→Duration loop) · runtime check: `CI=1 expo start --web` served
+    200, and fetching the actual Metro bundle confirmed it compiles clean (no
+    unresolved-module/syntax errors, `App` present). **Note:** Playwright MCP
+    returned "Connection closed" this session, so the true visual screenshot gate
+    (spec'd for Phase 3+) hasn't run yet — retry it when building the first real
+    screen; fall back to a different visual-check method if it stays down.
 
 - [ ] **Phase 3 — Launch screen**
   - Hero blob, title "Maharishi Meditation", subtitle, "Begin" pill button, plus a
