@@ -5,8 +5,6 @@ describe('appReducer', () => {
     expect(initialState).toEqual<AppState>({
       screen: 'launch',
       duration: null,
-      secondsLeft: 0,
-      secondsElapsed: 0,
       soundOn: true,
     });
   });
@@ -24,8 +22,7 @@ describe('appReducer', () => {
 
     state = appReducer(state, { type: 'START_SESSION' });
     expect(state.screen).toBe('session');
-    expect(state.secondsLeft).toBe(600);
-    expect(state.secondsElapsed).toBe(0);
+    expect(state.duration).toBe(10);
 
     state = appReducer(state, { type: 'FINISH_SESSION' });
     expect(state.screen).toBe('stats');
@@ -44,7 +41,7 @@ describe('appReducer', () => {
   it('has no back arrow on launch, session, or stats (BACK is a no-op there)', () => {
     expect(appReducer(initialState, { type: 'BACK' }).screen).toBe('launch');
 
-    const sessionState: AppState = { ...initialState, screen: 'session', duration: 5, secondsLeft: 100 };
+    const sessionState: AppState = { ...initialState, screen: 'session', duration: 5 };
     expect(appReducer(sessionState, { type: 'BACK' })).toEqual(sessionState);
 
     const statsState: AppState = { ...initialState, screen: 'stats' };
@@ -59,20 +56,20 @@ describe('appReducer', () => {
     expect(state.screen).toBe('launch');
   });
 
-  it('initializes a timed session with secondsLeft = duration * 60 and an open session with secondsElapsed = 0', () => {
+  it('starts a session with either a fixed duration or "open"', () => {
     const atDuration: AppState = { ...initialState, screen: 'duration' };
 
     const timed = appReducer(
       appReducer(atDuration, { type: 'SELECT_DURATION', duration: 3 }),
       { type: 'START_SESSION' }
     );
-    expect(timed).toMatchObject({ screen: 'session', secondsLeft: 180, secondsElapsed: 0 });
+    expect(timed).toMatchObject({ screen: 'session', duration: 3 });
 
     const open = appReducer(
       appReducer(atDuration, { type: 'SELECT_DURATION', duration: 'open' }),
       { type: 'START_SESSION' }
     );
-    expect(open).toMatchObject({ screen: 'session', secondsLeft: 0, secondsElapsed: 0 });
+    expect(open).toMatchObject({ screen: 'session', duration: 'open' });
   });
 
   it('refuses to start a session before a duration is selected', () => {
@@ -80,36 +77,18 @@ describe('appReducer', () => {
     expect(appReducer(atDuration, { type: 'START_SESSION' })).toEqual(atDuration);
   });
 
-  it('TICK counts a timed session down and an open session up', () => {
-    const timed: AppState = { ...initialState, screen: 'session', duration: 3, secondsLeft: 180 };
-    expect(appReducer(timed, { type: 'TICK' }).secondsLeft).toBe(179);
-
-    const open: AppState = { ...initialState, screen: 'session', duration: 'open', secondsElapsed: 41 };
-    expect(appReducer(open, { type: 'TICK' }).secondsElapsed).toBe(42);
-  });
-
-  it('TICK never takes secondsLeft below zero', () => {
-    const atZero: AppState = { ...initialState, screen: 'session', duration: 3, secondsLeft: 0 };
-    expect(appReducer(atZero, { type: 'TICK' }).secondsLeft).toBe(0);
-  });
-
   it('both FINISH_SESSION (timeout) and END_SESSION_EARLY route to Stats', () => {
-    const inSession: AppState = { ...initialState, screen: 'session', duration: 5, secondsLeft: 0 };
+    const inSession: AppState = { ...initialState, screen: 'session', duration: 5 };
     expect(appReducer(inSession, { type: 'FINISH_SESSION' }).screen).toBe('stats');
 
-    const inOpenSession: AppState = { ...initialState, screen: 'session', duration: 'open', secondsElapsed: 12 };
+    const inOpenSession: AppState = { ...initialState, screen: 'session', duration: 'open' };
     expect(appReducer(inOpenSession, { type: 'END_SESSION_EARLY' }).screen).toBe('stats');
   });
 
-  it('"Meditate again" (RESTART) loops Stats back to Duration and clears the prior duration/timer', () => {
-    const atStats: AppState = { ...initialState, screen: 'stats', duration: 10, secondsLeft: 0, secondsElapsed: 0 };
+  it('"Meditate again" (RESTART) loops Stats back to Duration and clears the prior duration', () => {
+    const atStats: AppState = { ...initialState, screen: 'stats', duration: 10 };
     const restarted = appReducer(atStats, { type: 'RESTART' });
-    expect(restarted).toMatchObject({
-      screen: 'duration',
-      duration: null,
-      secondsLeft: 0,
-      secondsElapsed: 0,
-    });
+    expect(restarted).toMatchObject({ screen: 'duration', duration: null });
   });
 
   it('TOGGLE_SOUND flips soundOn from its default of true', () => {

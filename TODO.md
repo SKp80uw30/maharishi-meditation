@@ -105,14 +105,30 @@ move on. Don't check a box without actually running its gate.
     all 5 options selectable, correct tile shows `accessibilityState.selected`,
     START_SESSION/BACK dispatch correctly) · bundle fetch confirms clean compile
 
-- [ ] **Phase 6 — Session screen + timer hook**
+- [x] **Phase 6 — Session screen + timer hook**
   - `app/src/hooks/useSessionTimer.ts`: countdown (timed) / count-up (Open),
-    isolated from the component for `jest.useFakeTimers` testing
-  - Dark screen, svg progress ring wired to elapsed %, MM:SS, sound toggle pill
-    (wiring only — actual audio is Phase 7), auto-advance to Stats at 0:00 (timed),
-    "End early"/"End session" button
-  - **Gate:** hook unit tests (timed mode reaches 0 and fires finish exactly once;
-    Open mode counts up indefinitely until told to stop) + dark-UI screenshot
+    `onFinish` fires exactly once. **Design change from Phase 2:** discovered
+    while building this that `secondsLeft`/`secondsElapsed`/`TICK` didn't belong
+    in the global `appReducer` at all — per CLAUDE.md's own state model note,
+    session timing is local to the Session screen, and ticking it through the
+    global reducer would re-render the whole app tree every second for nothing.
+    Moved it into this hook's own local `useState`; removed those three from
+    `appReducer`/`AppState` and updated its tests to match (still 41/41 passing
+    overall — this simplified the reducer, nothing regressed)
+  - `renderHook`/`act` (both exported by `@testing-library/react-native`,
+    despite not showing up in a first pass at the public `.d.ts` — re-checked
+    and found them under `pure.d.ts`) used with `jest.useFakeTimers` for the
+    hook tests, advancing one second at a time per `act()` call to mirror how
+    real separately-scheduled ticks actually commit
+  - Dark screen, svg `ProgressRing` wired to `progress` (null in Open mode = flat
+    track, no arc), MM:SS via `formatClock`, sound toggle pill wired to
+    `soundOn`/`TOGGLE_SOUND` (real audio playback is Phase 7 — copy already
+    reflects the toggle), auto-dispatches `FINISH_SESSION` at 0:00 (timed only),
+    "End early"/"End session" reuses the `Button` `outline` variant
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (41/41: hook reaches 0 and
+    fires finish exactly once and never again on further ticks, Open mode counts
+    up indefinitely and never finishes, screen wiring/copy/sound-toggle all
+    correct) · bundle fetch confirms clean compile
 
 - [ ] **Phase 7 — Ambient audio**
   - Synthesize a seamless placeholder ambient loop locally via ffmpeg (soft pad/tone,

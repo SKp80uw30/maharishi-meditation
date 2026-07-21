@@ -78,13 +78,23 @@ maharishi-meditation/
 
 ## State model (mirrors design README "State management")
 
-- `screen`: `'launch' | 'intention' | 'duration' | 'session' | 'stats' | 'about'`
-- `duration`: `number | 'open'` — chosen on Duration, consumed by Session and Stats.
-- `secondsElapsed` / `secondsLeft`: transient, on-device only, lives for the duration
-  of the Session screen.
-- `soundOn`: boolean, defaults `true`, session-scoped only (no account to persist to).
+Split across two layers — deliberately, not everything lives in the global reducer:
+
+- **Global** (`app/src/state/appReducer.ts`, drives navigation):
+  `screen`: `'launch' | 'intention' | 'duration' | 'session' | 'stats' | 'about'`;
+  `duration`: `number | 'open' | null` — chosen on Duration, consumed by Session
+  and Stats, reset to `null` on `RESTART`; `soundOn`: boolean, defaults `true`,
+  session-scoped only (no account to persist to).
+- **Local to the Session screen** (`app/src/hooks/useSessionTimer.ts`):
+  `secondsElapsed` / `secondsLeft` — transient, on-device only, ticks once a
+  second for exactly as long as the Session screen is mounted. This is
+  intentionally *not* in the global reducer: no other screen reads it, and
+  routing a 1Hz tick through app-wide state would re-render the whole tree every
+  second for nothing. (This was originally in the reducer from Phase 2; moved
+  out in Phase 6 once the timer hook made the better home obvious.)
 - Stats payload (`total_today`, `total_all_time`, optional `current_active_estimate`):
-  fetched/updated only on the Stats screen.
+  fetched/updated only on the Stats screen, via the API client
+  (`app/src/api/worldPeace.ts`).
 - No persisted client store, no auth state, no user identifiers anywhere.
 
 ## API contract (PRD "Backend architecture" / "Recommended MVP decision set")

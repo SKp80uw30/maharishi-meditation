@@ -1,6 +1,13 @@
 // Pure state machine for the app's single linear screen stack. See
 // CLAUDE.md "State model" and design_handoff_world_peace_mvp/README.md
 // "Interactions & behavior" for the source spec this mirrors.
+//
+// Session timing (secondsLeft/secondsElapsed) deliberately does NOT live here —
+// it's local to the Session screen via `useSessionTimer` (see
+// app/src/hooks/useSessionTimer.ts). Per CLAUDE.md's state model, that timer
+// "lives for the duration of the Session screen" only; driving a 1Hz tick
+// through this reducer would re-render the entire app tree every second for no
+// reason no other screen needs.
 
 export type Screen = 'launch' | 'intention' | 'duration' | 'session' | 'stats' | 'about';
 
@@ -9,10 +16,6 @@ export interface AppState {
   /** null = not yet chosen. Set on Duration, consumed by Session and Stats,
    * reset to null on RESTART so each session is chosen fresh. */
   duration: number | 'open' | null;
-  /** Countdown, timed mode only. */
-  secondsLeft: number;
-  /** Count-up, Open mode only. */
-  secondsElapsed: number;
   /** Defaults true; session-scoped only, never persisted. */
   soundOn: boolean;
 }
@@ -20,8 +23,6 @@ export interface AppState {
 export const initialState: AppState = {
   screen: 'launch',
   duration: null,
-  secondsLeft: 0,
-  secondsElapsed: 0,
   soundOn: true,
 };
 
@@ -31,7 +32,6 @@ export type AppAction =
   | { type: 'BACK' } // contextual: Intention/Duration/About -> previous screen
   | { type: 'SELECT_DURATION'; duration: number | 'open' }
   | { type: 'START_SESSION' } // Duration -> Session
-  | { type: 'TICK' } // one second of session elapsed
   | { type: 'FINISH_SESSION' } // timed mode auto-reaches 0:00 -> Stats
   | { type: 'END_SESSION_EARLY' } // "End early" / "End session" -> Stats
   | { type: 'TOGGLE_SOUND' }
@@ -63,23 +63,8 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case 'SELECT_DURATION':
       return state.screen === 'duration' ? { ...state, duration: action.duration } : state;
 
-    case 'START_SESSION': {
-      if (state.screen !== 'duration' || state.duration == null) return state;
-      return {
-        ...state,
-        screen: 'session',
-        secondsLeft: state.duration === 'open' ? 0 : state.duration * 60,
-        secondsElapsed: 0,
-      };
-    }
-
-    case 'TICK': {
-      if (state.screen !== 'session') return state;
-      if (state.duration === 'open') {
-        return { ...state, secondsElapsed: state.secondsElapsed + 1 };
-      }
-      return { ...state, secondsLeft: Math.max(0, state.secondsLeft - 1) };
-    }
+    case 'START_SESSION':
+      return state.screen === 'duration' && state.duration != null ? { ...state, screen: 'session' } : state;
 
     case 'FINISH_SESSION':
     case 'END_SESSION_EARLY':
@@ -89,9 +74,7 @@ export function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, soundOn: !state.soundOn };
 
     case 'RESTART':
-      return state.screen === 'stats'
-        ? { ...state, screen: 'duration', duration: null, secondsLeft: 0, secondsElapsed: 0 }
-        : state;
+      return state.screen === 'stats' ? { ...state, screen: 'duration', duration: null } : state;
 
     case 'OPEN_ABOUT':
       return state.screen === 'launch' ? { ...state, screen: 'about' } : state;
