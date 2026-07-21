@@ -78,10 +78,14 @@ move on. Don't check a box without actually running its gate.
     dispatches `BEGIN`, ⓘ dispatches `OPEN_ABOUT`) · bundle fetch confirms clean
     compile
 
-- [ ] **Phase 4 — Intention screen**
+- [x] **Phase 4 — Intention screen**
   - Micro-label, headline, intention card ("World Peace & Non-violence" + supporting
     line), "Begin your session" CTA, back arrow → Launch
-  - **Gate:** same pattern as Phase 3
+  - Factored the shared "←" back-arrow pattern (used by Intention, Duration, and
+    About) into a `BackButton` primitive in `app/src/components/`
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (28/28: intention copy
+    present, CONTINUE/BACK dispatch correctly) · bundle fetch confirms clean
+    compile
 
 - [ ] **Phase 5 — Duration screen**
   - 2×2 grid (3/5/10/20 min) + full-width "Open" option, selected/unselected
