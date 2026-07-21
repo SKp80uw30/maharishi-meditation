@@ -184,13 +184,37 @@ move on. Don't check a box without actually running its gate.
     copy and version footer present, BACK dispatches correctly) · bundle fetch
     confirms clean compile
 
-- [ ] **Phase 10 — Backend: Netlify Function + Upstash Redis**
-  - `backend/netlify/functions/`: increment handler (`INCR wp:total:all`,
-    `INCR wp:total:{YYYY-MM-DD}`) and stats handler (`MGET` both), against
-    `@upstash/redis`'s REST client
-  - `netlify.toml` at repo root pointing at `backend/netlify/functions`
-  - **Gate:** handler unit tests with the Redis client mocked (no live network) ·
-    typecheck clean
+- [x] **Phase 10 — Backend: Netlify Function + Upstash Redis**
+  - `backend/src/worldPeaceStore.ts`: `createRedisWorldPeaceStore(redis)` —
+    `increment()` does `INCR wp:total:{UTC YYYY-MM-DD}` + `INCR wp:total:all` in
+    parallel; `getStats()` does one `MGET` for both, missing keys (a brand-new
+    day) default to 0 rather than erroring
+  - `backend/src/handlers.ts`: `createIncrementHandler(store)` /
+    `createStatsHandler(store)` — factories, not the handlers themselves, so
+    tests inject a fake store without touching Redis/env; method-checked (405 on
+    wrong verb), and a thrown store error becomes a 500 response, never a crash
+  - `backend/netlify/functions/{meditations,stats}-world-peace.ts`: the two real
+    entry points, each just wiring `getWorldPeaceStore()` (the real
+    `Redis.fromEnv()`-backed singleton, `backend/src/redisClient.ts`) into its
+    handler factory
+  - `netlify.toml` at repo root: backend-only site (no frontend build here — the
+    Expo app deploys separately), redirects mapping the PRD's exact paths
+    (`/meditations/world-peace`, `/stats/world-peace`) onto Netlify's default
+    `/.netlify/functions/<name>` URLs
+  - **Toolchain findings:** pinned backend's `typescript` to `~6.0.3` (matching
+    the frontend) after a bare `npm install` grabbed 7.0.2, which is newer than
+    `ts-jest`'s supported range; `@upstash/redis`'s actual shipped `mget<T>`
+    generic types the *whole result array* (`T extends unknown[]`), not each
+    element — the doc example is misleading on this point, went with what the
+    real `.d.ts` demands; switched `moduleResolution` from the deprecated
+    `"node"` alias to `"nodenext"`, and added `isolatedModules: true` to silence
+    a ts-jest hybrid-module-kind warning
+  - **Gate — passed:** `tsc --noEmit` clean · `jest` (10/10: day-bucket key
+    format, increment bumps both counters and returns new totals, stats reads
+    both keys and defaults a fresh day to 0, both handlers reject the wrong HTTP
+    method with 405 and turn a store exception into a 500 rather than crashing)
+    — all against a fake store/Redis double, no live network or credentials
+    needed for this phase
 
 - [ ] **Phase 11 — Connect to live backend** ⚠️ needs user's accounts
   - Swap the app's mock API client for real HTTP calls via `EXPO_PUBLIC_API_URL`
