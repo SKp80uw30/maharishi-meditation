@@ -1,15 +1,17 @@
 import { Redis } from '@upstash/redis';
 import { createRedisWorldPeaceStore, WorldPeaceStore } from './worldPeaceStore';
 
-// Reads UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN from the environment
-// (Redis.fromEnv()) — set as Netlify site env vars, not committed anywhere. See
-// TODO.md Phase 11: these are account-owned credentials, provisioned when the
-// live backend is actually connected.
+// Railway provides Redis via REDIS_URL env var (e.g. redis://user:pass@host:port)
+// Upstash (alternative) uses UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
+// This client auto-detects which is available.
 let store: WorldPeaceStore | null = null;
 
 export function getWorldPeaceStore(): WorldPeaceStore {
   if (!store) {
-    store = createRedisWorldPeaceStore(Redis.fromEnv());
+    const redis = process.env.REDIS_URL
+      ? new Redis({ url: process.env.REDIS_URL })
+      : Redis.fromEnv();
+    store = createRedisWorldPeaceStore(redis);
   }
   return store;
 }
