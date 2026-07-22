@@ -71,7 +71,8 @@ function createUpstashClient(url: string, token: string): RedisLike {
       return redis.incr(key);
     },
     async mget(...keys: string[]): Promise<(number | null)[]> {
-      return redis.mget<[number | null, number | null]>(...keys);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return redis.mget(...keys) as Promise<(number | null)[]>;
     },
   };
 }
