@@ -57,6 +57,18 @@ function createOfficialRedisClient(redisUrl: string): RedisLike {
       const values = await client.mGet(keys);
       return values.map((v: string | null) => (v ? parseInt(v, 10) : null));
     },
+    async sadd(key: string, member: string, expirySeconds?: number): Promise<number> {
+      await ensure();
+      const result = await client.sAdd(key, member);
+      if (expirySeconds) {
+        await client.expire(key, expirySeconds);
+      }
+      return result;
+    },
+    async scard(key: string): Promise<number> {
+      await ensure();
+      return client.sCard(key);
+    },
   };
 }
 
@@ -73,6 +85,16 @@ function createUpstashClient(url: string, token: string): RedisLike {
     async mget(...keys: string[]): Promise<(number | null)[]> {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return redis.mget(...keys) as Promise<(number | null)[]>;
+    },
+    async sadd(key: string, member: string, expirySeconds?: number): Promise<number> {
+      const result = await redis.sadd(key, member);
+      if (expirySeconds) {
+        await redis.expire(key, expirySeconds);
+      }
+      return result;
+    },
+    async scard(key: string): Promise<number> {
+      return redis.scard(key);
     },
   };
 }
