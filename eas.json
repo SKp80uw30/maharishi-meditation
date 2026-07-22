@@ -1,0 +1,42 @@
+{
+  "cli": {
+    "version": ">= 21.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal"
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "ios": {
+        "buildConfiguration": "Release"
+      },
+      "android": {
+        "buildType": "app-bundle"
+      }
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "serviceAccount": "ASC_KEY_PATH",
+        "appleId": "APPLE_ID",
+        "appleTeamId": "APPLE_TEAM_ID",
+        "ascAppId": "YOUR_APP_ID"
+      },
+      "android": {
+        "serviceAccount": "PLAY_STORE_SERVICE_ACCOUNT"
+      }
+    }
+  }
+}
