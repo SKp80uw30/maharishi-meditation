@@ -3,20 +3,29 @@
   "version": "1.0.0",
   "private": true,
   "description": "Anonymous aggregate counting service for the World Peace meditation MVP. Two endpoints only: increment and read stats. No user data, no schema beyond Redis counters. See ../CLAUDE.md and ../maharishi-meditation-prd.md for the full contract.",
+  "main": "dist/server.js",
   "scripts": {
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts",
+    "build": "tsc",
     "test": "jest",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@netlify/functions": "^5.3.0",
-    "@upstash/redis": "^1.38.0"
+    "@upstash/redis": "^1.38.0",
+    "express": "^4.18.2"
   },
   "devDependencies": {
+    "@types/express": "^4.17.21",
     "@types/jest": "^30.0.0",
     "@types/node": "^26.1.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
+    "ts-node": "^10.9.2",
     "typescript": "~6.0.3"
+  },
+  "engines": {
+    "node": "18"
   },
   "jest": {
     "preset": "ts-jest",
