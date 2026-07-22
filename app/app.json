@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "app",
-    "slug": "app",
+    "name": "Maharishi Meditation",
+    "slug": "maharishi-meditation",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,6 +24,11 @@
     "plugins": [
       "expo-audio",
       "expo-font"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "5d79b1d5-b9b6-465c-86ce-4c6fe5b4cbb8"
+      }
+    }
   }
 }

@@ -46,6 +46,34 @@ export function createMockWorldPeaceApi(seed: WorldPeaceStats = DEFAULT_SEED): W
   };
 }
 
-/** The client the app actually uses. Phase 11 swaps this for a real HTTP
- * implementation (behind the same interface) once a live backend URL exists. */
-export const worldPeaceApi: WorldPeaceApiClient = createMockWorldPeaceApi();
+/** Real HTTP client — connects to the deployed backend (Phase 10+). Uses the
+ * EXPO_PUBLIC_API_URL environment variable; if not set, falls back to mock. */
+export function createRealWorldPeaceApi(baseUrl: string): WorldPeaceApiClient {
+  return {
+    async increment() {
+      const response = await fetch(`${baseUrl}/meditations/world-peace`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error(`Increment failed: ${response.status}`);
+      }
+    },
+    async getStats() {
+      const response = await fetch(`${baseUrl}/stats/world-peace`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) {
+        throw new Error(`Stats fetch failed: ${response.status}`);
+      }
+      return response.json();
+    },
+  };
+}
+
+/** The client the app actually uses. Phase 11 (now): uses real backend if
+ * EXPO_PUBLIC_API_URL is set, otherwise falls back to mock for offline dev. */
+export const worldPeaceApi: WorldPeaceApiClient = process.env.EXPO_PUBLIC_API_URL
+  ? createRealWorldPeaceApi(process.env.EXPO_PUBLIC_API_URL)
+  : createMockWorldPeaceApi();
