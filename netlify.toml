@@ -1,0 +1,23 @@
+# Backend-only Netlify site (no frontend build here — the Expo app is a
+# separate mobile deploy, not hosted on Netlify). See backend/ and
+# CLAUDE.md "Backend architecture".
+
+[build]
+  functions = "backend/netlify/functions"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Map the PRD's exact endpoint paths onto Netlify's default
+# /.netlify/functions/<name> URLs.
+[[redirects]]
+  from = "/meditations/world-peace"
+  to = "/.netlify/functions/meditations-world-peace"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/stats/world-peace"
+  to = "/.netlify/functions/stats-world-peace"
+  status = 200
+  force = true

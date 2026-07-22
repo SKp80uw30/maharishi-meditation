@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/tokens/fonts.css">
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/tokens/colors.css">
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/tokens/typography.css">
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/tokens/spacing.css">
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/tokens/effects.css">
+  <link rel="stylesheet" href="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/styles.css">
+  <script src="_ds/maharishi-meditation-design-system-1cecc830-a6d7-476a-89ef-8084acdf90dc/_ds_bundle.js"></script>
+  <style>
+    body{margin:0;background:var(--color-cream-50, #faf3ea);font-family:var(--font-sans, sans-serif)}
+    a{color:var(--brand-primary,#c4562e)}
+    a:hover{color:var(--color-coral-600,#a8461f)}
+  </style>
+</helmet>
+
+<div style="padding:48px 44px 80px">
+  <h1 style="font:800 26px var(--font-sans);color:var(--text-primary);margin:0 0 6px">Maharishi Meditation — UI mockups</h1>
+  <p style="font:15px var(--font-sans);color:var(--text-secondary);margin:0 0 36px;max-width:640px">The full five-step ritual, plus a bonus privacy screen, built from the design system's components and tokens.</p>
+
+  <div style="display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start">
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">1 · Launch</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="LaunchScreen" from="./ds_screens/LaunchScreen.jsx" onBegin="{{ noop }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">2 · Intention confirmation</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="IntentionScreen" from="./ds_screens/IntentionScreen.jsx" onContinue="{{ noop }}" onBack="{{ noop }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">3 · Duration selection</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="DurationScreen" from="./ds_screens/DurationScreen.jsx" onStart="{{ noop }}" onBack="{{ noop }}" duration="{{ duration }}" setDuration="{{ setDuration }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">4 · Meditation session</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="SessionScreen" from="./ds_screens/SessionScreen.jsx" duration="{{ duration }}" soundOn="{{ soundOn }}" onToggleSound="{{ toggleSound }}" onFinish="{{ noop }}" onEndEarly="{{ noop }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">5 · Reflection &amp; stats</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="StatsScreen" from="./ds_screens/StatsScreen.jsx" duration="{{ duration }}" onRestart="{{ noop }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:700 13px var(--font-sans);color:var(--text-tertiary);text-transform:uppercase;letter-spacing:.04em">Bonus · About &amp; privacy</span>
+      <div style="width:390px;height:780px;border-radius:44px;background:var(--surface-page,#faf3ea);box-shadow:var(--shadow-l);overflow:hidden;position:relative;display:flex;flex-direction:column;font-family:var(--font-sans)">
+        <x-import component-from-global-scope="AboutScreen" from="./ds_screens/AboutScreen.jsx" onBack="{{ noop }}" hint-size="390px,780px"></x-import>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;soundOn&quot;: {&quot;editor&quot;: &quot;boolean&quot;, &quot;default&quot;: true, &quot;tsType&quot;: &quot;boolean&quot;, &quot;section&quot;: &quot;Meditation session&quot;}}">
+class Component extends DCLogic {
+  state = { duration: 10, soundOn: null };
+  renderVals() {
+    return {
+      soundOn: this.state.soundOn ?? (this.props.soundOn ?? true),
+      toggleSound: () => this.setState(s => ({ soundOn: !(s.soundOn ?? (this.props.soundOn ?? true)) })),
+      duration: this.state.duration,
+      setDuration: (d) => this.setState({ duration: d }),
+      noop: () => {}
+    };
+  }
+}
+
+</script>
+</body>
+</html>

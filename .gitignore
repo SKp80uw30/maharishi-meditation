@@ -1,0 +1,28 @@
+# macOS
+.DS_Store
+
+# Node
+node_modules/
+npm-debug.log*
+
+# Expo
+app/.expo/
+app/dist/
+app/web-build/
+app/*.jks
+app/*.p8
+app/*.p12
+app/*.key
+app/*.mobileprovision
+
+# Env
+.env
+.env.local
+app/.env*.local
+backend/.env
+
+# Test/coverage
+coverage/
+
+# Editor
+.vscode/
