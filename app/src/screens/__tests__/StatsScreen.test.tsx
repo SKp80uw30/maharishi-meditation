@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StatsScreen from '../StatsScreen';
 import { initialState } from '../../state/appReducer';
 import { createMockWorldPeaceApi, WorldPeaceApiClient } from '../../api/worldPeace';
@@ -11,7 +12,9 @@ describe('StatsScreen', () => {
     const dispatch = jest.fn();
 
     await render(
-      <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      <SafeAreaProvider>
+        <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      </SafeAreaProvider>
     );
 
     expect(incrementSpy).toHaveBeenCalledTimes(1);
@@ -41,7 +44,9 @@ describe('StatsScreen', () => {
     const client = createMockWorldPeaceApi();
     const dispatch = jest.fn();
     await render(
-      <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      <SafeAreaProvider>
+        <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      </SafeAreaProvider>
     );
 
     await fireEvent.press(screen.getByRole('button', { name: 'Meditate again' }));

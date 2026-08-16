@@ -5,6 +5,7 @@ import { Button, BlobMark, ScreenContainer } from '../components';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, tracking } from '../theme/typography';
 import { space } from '../theme/spacing';
+import { narrative } from '../content/story';
 
 // design_handoff_world_peace_mvp/components/LaunchScreen.jsx +
 // README "1. Launch screen". The info affordance to About is a README
@@ -29,7 +30,7 @@ export default function LaunchScreen({ dispatch }: { dispatch: Dispatch<AppActio
 
         <View style={styles.textBlock}>
           <Text style={styles.title}>Maharishi Meditation</Text>
-          <Text style={styles.subtitle}>A shared meditation for World Peace.</Text>
+          <Text style={styles.subtitle}>{narrative.launchSubtitle}</Text>
         </View>
 
         <Button label="Begin" onPress={() => dispatch({ type: 'BEGIN' })} />

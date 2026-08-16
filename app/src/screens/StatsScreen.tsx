@@ -1,11 +1,12 @@
 import React, { Dispatch, useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
-import { BlobMark, Button, Card, ScreenContainer } from '../components';
+import { BlobMark, Button, Card, ScreenContainer, Sheet, StoryTimeline } from '../components';
 import { WorldPeaceApiClient, WorldPeaceStats, worldPeaceApi } from '../api/worldPeace';
 import { colors } from '../theme/colors';
-import { fontFamily, fontSize } from '../theme/typography';
+import { fontFamily, fontSize, leading } from '../theme/typography';
 import { space } from '../theme/spacing';
+import { narrative } from '../content/story';
 
 type Props = {
   state: AppState;
@@ -21,6 +22,7 @@ type Props = {
 // for why: covers both natural timeout and "End early" with one trigger).
 export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi }: Props) {
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
+  const [showStory, setShowStory] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -58,7 +60,32 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
         <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} />
       </View>
 
+      {/* Fact card with deep-dive link */}
+      <Card style={styles.factCard}>
+        <Text style={styles.factText}>{narrative.statsFactCard}</Text>
+        <Pressable
+          onPress={() => setShowStory(true)}
+          style={styles.factLink}
+          accessible
+          accessibilityRole="link"
+          accessibilityLabel="Read the full story"
+        >
+          <Text style={styles.factLinkText}>Read the full story →</Text>
+        </Pressable>
+      </Card>
+
       <Button label="Meditate again" onPress={() => dispatch({ type: 'RESTART' })} fullWidth style={styles.cta} />
+
+      {/* Story deep-dive modal */}
+      <Sheet isOpen={showStory} onClose={() => setShowStory(false)} title="The Story">
+        <ScrollView showsVerticalScrollIndicator>
+          <Text style={styles.storyText}>{narrative.originStory}</Text>
+          <View style={{ height: space[8] }}>
+            <Text style={styles.timelineHeading}>Timeline of Research</Text>
+          </View>
+          <StoryTimeline entries={narrative.timeline} />
+        </ScrollView>
+      </Sheet>
     </ScreenContainer>
   );
 }
@@ -113,6 +140,41 @@ const styles = StyleSheet.create({
   statValue: {
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.headingM,
+  },
+  factCard: {
+    width: '100%',
+    backgroundColor: colors.surfaceSunken,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.brandSecondary,
+  },
+  factText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.textSecondary,
+    lineHeight: leading(1.5, fontSize.bodyS),
+    marginBottom: space[3],
+  },
+  factLink: {
+    marginTop: space[2],
+  },
+  factLinkText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.textLink,
+    textDecorationLine: 'underline',
+  },
+  storyText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyM,
+    color: colors.textPrimary,
+    lineHeight: leading(1.6, fontSize.bodyM),
+    marginBottom: space[6],
+  },
+  timelineHeading: {
+    fontFamily: fontFamily.bold,
+    fontSize: fontSize.headingM,
+    color: colors.textPrimary,
+    lineHeight: leading(1.3, fontSize.headingM),
   },
   cta: {
     marginTop: 'auto',

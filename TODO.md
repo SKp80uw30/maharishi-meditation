@@ -299,6 +299,46 @@ move on. Don't check a box without actually running its gate.
     ip -4` if `100.123.223.78` stops working. Real native-build testing on this
     device needs Phase 13's EAS development build instead of Expo Go.
 
+- [ ] **Phase 14 — Narrative & whimsy layer**
+  - **Why this matters:** Phase 12's testing revealed the core issue — without the
+    story of *why* group meditation matters, the app feels like a bare timer with
+    a counter. Adding the Maharishi Effect narrative (50 years of research on
+    collective meditation effects) + subtle whimsy (breathing animations, count-up
+    numbers, contemplative micro-interactions) transforms it from functional to
+    meaningful.
+  - **Core changes:**
+    - New `app/src/content/story.ts`: one source of truth for all narrative copy
+      (one-liner premises for each screen, full origin story, experiment timeline,
+      visual metaphors). No inline prose in screens.
+    - New `app/src/components/Sheet.tsx`: minimal bottom-sheet modal (using RN's
+      built-in `Modal`) for the full story + timeline, opened from Stats/About.
+    - New `app/src/components/StoryTimeline.tsx`: vertical timeline component
+      rendering experiment milestones.
+    - Extend `BlobMark` + `ProgressRing` with optional `breathing?: boolean` prop
+      (4-second pulse using existing `duration.breath` token + `easing.outSoft`,
+      gated behind `AccessibilityInfo.isReduceMotionEnabled()` for accessibility).
+    - Extend `StatsScreen` with count-up animation on the two stat numbers (0 →
+      final value over ~800ms, same accessibility guard).
+    - Update copy on **LaunchScreen** (subtitle), **IntentionScreen** (supporting
+      line), **SessionScreen** (companion line to "Others are meditating..."),
+      **StatsScreen** (fact card with experiment context), **AboutScreen** (third
+      card with story excerpt + deep-dive link).
+  - **Technical debt addressed:** No modal/overlay pattern existed in the app
+    (`grep -rn "Modal"` returned nothing), and animations weren't used. This phase
+    establishes both patterns consistently with existing design tokens/primitives.
+  - **Phasing note:** Story lives *in* the core 5-step ritual (one line per screen)
+    + optional deep-dive via Sheet, not gated behind the core flow. Each narrative
+    line is crafted to feel grounded and necessary, not decorative.
+  - **Gate — all pass to check off:**
+    - `tsc --noEmit` clean
+    - `jest` (existing 55/55 + new tests for Sheet/StoryTimeline/animation; expect ~75 total)
+    - Bundle compiles (`CI=1 expo start --web` serves 200) and no console errors
+    - Visual pass on the 5 modified screens (via Playwright or manual web pass)
+      confirming breathing/count-up animations render, story copy fits the visual
+      hierarchy, and no clash with design system colors/spacing
+    - Reduced-motion testing: confirm animations are disabled when
+      `AccessibilityInfo.isReduceMotionEnabled()` is true (can mock in Jest)
+
 - [ ] **Phase 13 — (stretch, optional) Build readiness**
   - App icon/splash assets, `app.json` metadata, EAS build config for real-device
     testing beyond Expo Go
