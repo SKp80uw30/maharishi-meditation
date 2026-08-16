@@ -52,7 +52,7 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
     <ScreenContainer style={styles.container} testID="screen-intention">
       <BackButton onPress={() => dispatch({ type: 'BACK' })} />
 
-      <View style={styles.middle}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
         <Text style={styles.microLabel}>Today's intention</Text>
         <Text style={styles.headline}>What energy are you{'\n'}sending into the world today?</Text>
 
@@ -77,9 +77,9 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
             </View>
           </View>
         </Card>
-      </View>
+      </ScrollView>
 
-      <Button label="Begin your session" onPress={() => dispatch({ type: 'CONTINUE' })} fullWidth />
+      <Button label="Begin your session" onPress={() => dispatch({ type: 'CONTINUE' })} fullWidth style={styles.cta} />
 
       {/* Story deep-dive modal */}
       <Sheet isOpen={showStory} onClose={() => setShowStory(false)} title="The Story">
@@ -97,15 +97,15 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'column',
     paddingTop: space[6] + space[1],
-    paddingHorizontal: space[6] + space[1],
-    paddingBottom: space[10],
   },
-  middle: {
-    flex: 1,
+  scrollContent: {
     alignItems: 'center',
     justifyContent: 'center',
     gap: space[5],
+    paddingHorizontal: space[6] + space[1],
+    paddingVertical: space[6],
   },
   microLabel: {
     fontFamily: fontFamily.bold,
@@ -180,5 +180,9 @@ const styles = StyleSheet.create({
     fontSize: fontSize.headingM,
     color: colors.textPrimary,
     lineHeight: leading(1.3, fontSize.headingM),
+  },
+  cta: {
+    paddingHorizontal: space[6] + space[1],
+    paddingBottom: space[6],
   },
 });

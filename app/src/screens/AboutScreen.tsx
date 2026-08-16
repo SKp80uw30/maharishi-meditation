@@ -1,5 +1,5 @@
 import React, { Dispatch } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { AppAction } from '../state/appReducer';
 import { BackButton, Card, ScreenContainer } from '../components';
 import { colors } from '../theme/colors';
@@ -15,7 +15,7 @@ export default function AboutScreen({ dispatch }: { dispatch: Dispatch<AppAction
     <ScreenContainer style={styles.container} testID="screen-about">
       <BackButton onPress={() => dispatch({ type: 'BACK' })} />
 
-      <View style={styles.body}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
         <Text style={styles.heading}>Privacy, simply</Text>
 
         <Card style={styles.card}>
@@ -34,9 +34,9 @@ export default function AboutScreen({ dispatch }: { dispatch: Dispatch<AppAction
             one session at a time.
           </Text>
         </Card>
-      </View>
 
-      <Text style={styles.footer}>v1.0 · made for a shared field of practice</Text>
+        <Text style={styles.footer}>v1.0 · made for a shared field of practice</Text>
+      </ScrollView>
     </ScreenContainer>
   );
 }
@@ -44,12 +44,13 @@ export default function AboutScreen({ dispatch }: { dispatch: Dispatch<AppAction
 const styles = StyleSheet.create({
   container: {
     paddingTop: space[6] + space[1],
-    paddingHorizontal: space[6] + space[1],
-    paddingBottom: space[10],
+    flex: 1,
   },
-  body: {
+  scrollContent: {
     gap: space[5],
     marginTop: space[3],
+    paddingHorizontal: space[6] + space[1],
+    paddingBottom: space[6],
   },
   heading: {
     fontFamily: fontFamily.extrabold,

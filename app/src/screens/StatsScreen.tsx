@@ -49,32 +49,37 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
 
   return (
     <ScreenContainer style={styles.container} testID="screen-stats">
-      <BlobMark size={64} glow={false} />
-      <Text style={styles.heading}>Session complete</Text>
-      <Text style={styles.supporting}>
-        Thank you for {thanksLine}. Others were meditating alongside you at the same time.
-      </Text>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
+        <BlobMark size={64} glow={false} />
+        <Text style={styles.heading}>Session complete</Text>
+        <Text style={styles.supporting}>
+          Thank you for {thanksLine}. Others were meditating alongside you at the same time.
+        </Text>
 
-      <View style={styles.stats}>
-        <StatRow label="World Peace meditations today" value={stats?.total_today} valueColor={colors.brandPrimary} />
-        <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} />
+        <View style={styles.stats}>
+          <StatRow label="World Peace meditations today" value={stats?.total_today} valueColor={colors.brandPrimary} />
+          <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} />
+        </View>
+
+        {/* Fact card with deep-dive link */}
+        <Card style={styles.factCard}>
+          <Text style={styles.factText}>{narrative.statsFactCard}</Text>
+          <Pressable
+            onPress={() => setShowStory(true)}
+            style={styles.factLink}
+            accessible
+            accessibilityRole="link"
+            accessibilityLabel="Read the full story"
+          >
+            <Text style={styles.factLinkText}>Read the full story →</Text>
+          </Pressable>
+        </Card>
+      </ScrollView>
+
+      <View style={styles.buttonGroup}>
+        <Button label="Meditate again" onPress={() => dispatch({ type: 'RESTART' })} fullWidth />
+        <Button label="Home" onPress={() => dispatch({ type: 'HOME' })} variant="outline" fullWidth />
       </View>
-
-      {/* Fact card with deep-dive link */}
-      <Card style={styles.factCard}>
-        <Text style={styles.factText}>{narrative.statsFactCard}</Text>
-        <Pressable
-          onPress={() => setShowStory(true)}
-          style={styles.factLink}
-          accessible
-          accessibilityRole="link"
-          accessibilityLabel="Read the full story"
-        >
-          <Text style={styles.factLinkText}>Read the full story →</Text>
-        </Pressable>
-      </Card>
-
-      <Button label="Meditate again" onPress={() => dispatch({ type: 'RESTART' })} fullWidth style={styles.cta} />
 
       {/* Story deep-dive modal */}
       <Sheet isOpen={showStory} onClose={() => setShowStory(false)} title="The Story">
@@ -101,10 +106,14 @@ function StatRow({ label, value, valueColor }: { label: string; value: number | 
 
 const styles = StyleSheet.create({
   container: {
+    flexDirection: 'column',
+    gap: space[5],
+  },
+  scrollContent: {
     alignItems: 'center',
     paddingTop: space[8],
     paddingHorizontal: space[6] + space[1],
-    paddingBottom: space[10],
+    paddingBottom: space[6],
     gap: space[5],
   },
   heading: {
@@ -176,7 +185,9 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: leading(1.3, fontSize.headingM),
   },
-  cta: {
-    marginTop: 'auto',
+  buttonGroup: {
+    paddingHorizontal: space[6] + space[1],
+    paddingBottom: space[6],
+    gap: space[3],
   },
 });
