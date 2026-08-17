@@ -1,12 +1,13 @@
 import React, { Dispatch } from 'react';
-import { Pressable, StyleSheet, Text } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
 import { Button, ProgressRing, ScreenContainer } from '../components';
 import { useSessionTimer, formatClock } from '../hooks/useSessionTimer';
 import { useAmbientLoop } from '../hooks/useAmbientLoop';
 import { colors } from '../theme/colors';
-import { fontFamily, fontSize, tracking } from '../theme/typography';
+import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
 import { radius, space } from '../theme/spacing';
+import { narrative } from '../content/story';
 
 // design_handoff_world_peace_mvp/components/SessionScreen.jsx +
 // README "4. Meditation session" — the app's one dark surface, meant to feel
@@ -37,10 +38,13 @@ export default function SessionScreen({
         <Text style={styles.caption}>{isOpen ? 'Open session' : 'World Peace'}</Text>
       </ProgressRing>
 
-      <Text style={styles.supporting}>
-        Breathe gently. Others are meditating alongside you right now.
-        {state.soundOn ? ' A gentle ambient tone plays as you go.' : ''}
-      </Text>
+      <View style={styles.textBlock}>
+        <Text style={styles.supporting}>
+          Breathe gently. Others are meditating alongside you right now.
+          {state.soundOn ? ' A gentle ambient tone plays as you go.' : ''}
+        </Text>
+        <Text style={styles.narrativeCompanion}>{narrative.sessionCompanionLine}</Text>
+      </View>
 
       <Button
         variant="outline"
@@ -101,11 +105,24 @@ const styles = StyleSheet.create({
     letterSpacing: tracking(0.04, fontSize.caption),
     textTransform: 'uppercase',
   },
+  textBlock: {
+    gap: space[4],
+    alignItems: 'center',
+  },
   supporting: {
     fontFamily: fontFamily.regular,
     fontSize: fontSize.bodyM,
     color: colors.sessionTextSecondary,
     textAlign: 'center',
     maxWidth: 260,
+  },
+  narrativeCompanion: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.sessionTextTertiary,
+    textAlign: 'center',
+    maxWidth: 260,
+    lineHeight: leading(1.4, fontSize.bodyS),
+    fontStyle: 'italic',
   },
 });

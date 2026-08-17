@@ -36,6 +36,9 @@
   "private": true,
   "jest": {
     "preset": "jest-expo",
+    "setupFiles": [
+      "<rootDir>/jest.setup.js"
+    ],
     "moduleNameMapper": {
       "^expo-audio$": "<rootDir>/__mocks__/expo-audio.ts"
     }

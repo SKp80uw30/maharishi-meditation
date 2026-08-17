@@ -1,5 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import StatsScreen from '../StatsScreen';
 import { initialState } from '../../state/appReducer';
 import { createMockWorldPeaceApi, WorldPeaceApiClient } from '../../api/worldPeace';
@@ -11,7 +12,9 @@ describe('StatsScreen', () => {
     const dispatch = jest.fn();
 
     await render(
-      <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      <SafeAreaProvider>
+        <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      </SafeAreaProvider>
     );
 
     expect(incrementSpy).toHaveBeenCalledTimes(1);
@@ -25,7 +28,7 @@ describe('StatsScreen', () => {
     await render(
       <StatsScreen state={{ ...initialState, screen: 'stats', duration: 20 }} dispatch={dispatch} apiClient={client} />
     );
-    expect(screen.getByText(/Thank you for your 20 minutes\./)).toBeTruthy();
+    expect(screen.getByText(/Thank you for your 20 minutes of presence\./)).toBeTruthy();
   });
 
   it('shows the Open-mode thank-you copy when duration is "open"', async () => {
@@ -34,14 +37,16 @@ describe('StatsScreen', () => {
     await render(
       <StatsScreen state={{ ...initialState, screen: 'stats', duration: 'open' }} dispatch={dispatch} apiClient={client} />
     );
-    expect(screen.getByText(/Thank you for your session\./)).toBeTruthy();
+    expect(screen.getByText(/Thank you for your presence\./)).toBeTruthy();
   });
 
   it('dispatches RESTART when "Meditate again" is tapped', async () => {
     const client = createMockWorldPeaceApi();
     const dispatch = jest.fn();
     await render(
-      <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      <SafeAreaProvider>
+        <StatsScreen state={{ ...initialState, screen: 'stats', duration: 10 }} dispatch={dispatch} apiClient={client} />
+      </SafeAreaProvider>
     );
 
     await fireEvent.press(screen.getByRole('button', { name: 'Meditate again' }));

@@ -36,6 +36,7 @@ export type AppAction =
   | { type: 'END_SESSION_EARLY' } // "End early" / "End session" -> Stats
   | { type: 'TOGGLE_SOUND' }
   | { type: 'RESTART' } // Stats "Meditate again" -> Duration
+  | { type: 'HOME' } // Stats "Home" -> Launch
   | { type: 'OPEN_ABOUT' }; // Launch's info affordance -> About
 
 export function appReducer(state: AppState, action: AppAction): AppState {
@@ -75,6 +76,9 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case 'RESTART':
       return state.screen === 'stats' ? { ...state, screen: 'duration', duration: null } : state;
+
+    case 'HOME':
+      return state.screen === 'stats' ? { ...state, screen: 'launch', duration: null } : state;
 
     case 'OPEN_ABOUT':
       return state.screen === 'launch' ? { ...state, screen: 'about' } : state;

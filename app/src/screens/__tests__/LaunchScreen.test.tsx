@@ -8,7 +8,7 @@ describe('LaunchScreen', () => {
     await render(<LaunchScreen dispatch={dispatch} />);
 
     expect(screen.getByText('Maharishi Meditation')).toBeTruthy();
-    expect(screen.getByText('A shared meditation for World Peace.')).toBeTruthy();
+    expect(screen.getByText('A shared breath. Fifty years of proof.')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
     expect(dispatch).toHaveBeenCalledWith({ type: 'BEGIN' });
