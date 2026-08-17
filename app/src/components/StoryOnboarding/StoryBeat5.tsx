@@ -18,8 +18,8 @@ type Props = {
  */
 export default function StoryBeat5({ onContinue, onSkip }: Props) {
   // null = no estimate available (it's optional in the API contract, and the
-  // request can simply fail) — the live-count block is hidden entirely then
-  // rather than claiming "0 people are meditating".
+  // request can simply fail). A real zero is treated the same way below —
+  // neither should render "0 people are meditating".
   const [activeCount, setActiveCount] = useState<number | null>(null);
   // useRef, not a bare `new Animated.Value()`: a fresh value object on every
   // render would change the effect's dependency every render, re-firing the
@@ -63,7 +63,7 @@ export default function StoryBeat5({ onContinue, onSkip }: Props) {
         {/* Glowing blob + live count */}
         <View style={styles.blobSection}>
           <BlobMark size={100} glow breathing />
-          {activeCount != null && (
+          {activeCount != null && activeCount > 0 && (
             <Animated.View
               style={[
                 styles.liveCount,
@@ -80,7 +80,7 @@ export default function StoryBeat5({ onContinue, onSkip }: Props) {
 
         {/* Message */}
         <Text style={styles.copy}>
-          {activeCount != null
+          {activeCount != null && activeCount > 0
             ? `Right now, ${activeCount} people are meditating for World Peace.`
             : 'Right now, others are meditating for World Peace.'}
         </Text>

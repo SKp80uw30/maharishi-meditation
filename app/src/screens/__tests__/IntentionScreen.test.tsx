@@ -52,6 +52,26 @@ describe('IntentionScreen', () => {
     });
   });
 
+  it('hides the meditator count when the estimate is a real zero', async () => {
+    (worldPeaceModule.worldPeaceApi.getStats as jest.Mock).mockResolvedValue({
+      total_today: 100,
+      total_all_time: 5000,
+      // A routine reading — the backend's active-session set drains after 30
+      // minutes — but "0 meditators" would contradict the copy beside it.
+      current_active_estimate: 0,
+    });
+    const dispatch = jest.fn();
+    await render(
+      <SafeAreaProvider>
+        <IntentionScreen dispatch={dispatch} />
+      </SafeAreaProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/meditators?/)).toBeNull();
+    });
+  });
+
   it('dispatches CONTINUE on the CTA', async () => {
     const dispatch = jest.fn();
     await render(

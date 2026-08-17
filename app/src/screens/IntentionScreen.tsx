@@ -18,9 +18,10 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showStory, setShowStory] = useState(false);
-  // null = the API gave no estimate (it's optional in the contract) — the
-  // count block is hidden entirely then. Showing a literal "0 meditators"
-  // would contradict the supporting line right next to it.
+  // null = the API gave no estimate (it's optional in the contract). Both that
+  // and a real zero hide the count block: "0 meditators" would contradict the
+  // supporting line right next to it, and zero is a routine reading since the
+  // active-session set drains after 30 minutes.
   const [displayCount, setDisplayCount] = useState<number | null>(null);
   const [prevCount, setPrevCount] = useState<number | null>(null);
 
@@ -98,7 +99,7 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
                 <Text style={styles.deepDiveLinkText}>Go deeper →</Text>
               </Pressable>
             </View>
-            {displayCount != null && (
+            {displayCount != null && displayCount > 0 && (
               <View style={styles.activeCount}>
                 <Animated.Text
                   style={[
