@@ -421,6 +421,37 @@ move on. Don't check a box without actually running its gate.
     next to copy claiming others were meditating. Zero now hides the count like
     an absent field does.
 
+- [x] **Phase 16 — Real-time presence (2026-08-18)**
+  - **Why:** the "meditators now" number could only ever describe people who had
+    already finished. It was derived from the completion counter, which fires
+    when a session reaches Stats, so anyone mid-session was invisible. No window
+    length fixes that — it measured the wrong event.
+  - `backend/src/presenceStore.ts`: sorted set scored by each entry's own
+    expiry, swept on read, so sessions age out individually. Replaces the shared
+    single-TTL set that never expired members and so accumulated under steady
+    traffic then dropped to zero all at once. Holds are clamped and scored from
+    the **server** clock, so a client can't park a ghost in the count.
+  - `app/src/hooks/usePresence.ts`: the hold is derived from the chosen
+    duration, so **timed sessions need no heartbeat at all** — a 20-minute sit
+    claims 20 minutes plus grace. Only open-ended sessions ping (every 2 min,
+    with a 5-min hold, so one dropped ping doesn't evict a real meditator).
+    Fewer requests than a fixed interval *and* the number stays true.
+  - Session screen copy is now honest: the real count when there is one,
+    "you are holding the space" when sitting alone. It previously asserted
+    "Others are meditating alongside you right now" unconditionally.
+  - **Bug found by deploying:** the first request after any deploy 500'd. The
+    new stats route fetches counters and presence concurrently, and the RESP
+    adapter's lazy connect was guarded by a boolean set from an async event, so
+    both commands called `connect()` and the second threw. Now memoises the
+    connect promise; a failed connect clears it so a transient outage retries.
+  - **Gate — passed:** app 89/89 · backend 35/35 · deployed and verified live
+    with two simultaneous browser sessions: alone → "You are holding the space",
+    second joins → "One other person is meditating alongside you right now",
+    and the count drops when one leaves.
+  - **Open:** the launch-event idea (a scheduled simultaneous meditation) cuts
+    against the PRD's "not a scheduled/joined group session" framing. Worth a
+    deliberate decision before building any countdown/join UI.
+
 - [ ] **Phase 13 — (stretch, optional) Build readiness**
   - App icon/splash assets, `app.json` metadata, EAS build config for real-device
     testing beyond Expo Go

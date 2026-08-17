@@ -26,13 +26,15 @@ export const narrative = {
    * unknown (offline, or the request failed). Sitting alone is framed as
    * holding the space open, not as a shortfall. */
   sessionPresence: (others: number | null): string => {
+    // No "breathe gently" here — the companion line just below already carries
+    // it, and the two lines sit together on screen.
     if (others == null || others === 0) {
-      return 'Breathe gently. You are holding the space right now.';
+      return 'You are holding the space right now.';
     }
     if (others === 1) {
-      return 'Breathe gently. One other person is meditating alongside you right now.';
+      return 'One other person is meditating alongside you right now.';
     }
-    return `Breathe gently. ${others} others are meditating alongside you right now.`;
+    return `${others} others are meditating alongside you right now.`;
   },
 
   statsFactCard:

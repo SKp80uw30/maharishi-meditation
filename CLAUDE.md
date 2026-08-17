@@ -119,9 +119,30 @@ described under Testing below.
   and `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` (`@upstash/redis`,
   REST). `@upstash/redis` cannot speak `redis://`, so don't point it at
   `REDIS_URL`.
-- **`current_active_estimate` is optional and often `0`** (the session set drains
-  after 30 minutes). Treat `0` exactly like absent in the UI — never render
-  "0 meditators" beside copy saying others are meditating.
+- **Presence vs. completions — keep these separate.** `worldPeaceStore` counts
+  sessions that have *finished* (the increment fires on arrival at Stats).
+  `presenceStore` counts sessions *in flight*. They were once entangled, which
+  made `current_active_estimate` structurally dishonest: it was derived from the
+  completion counter, so everyone it counted had already stopped meditating.
+  Presence is a sorted set scored by each entry's own expiry, swept on read, so
+  sessions age out individually — not one shared TTL over a whole set.
+- **Presence endpoints**: `POST /presence/start`, `/presence/heartbeat` (the same
+  operation — both just extend the entry) and `/presence/end`.
+  `GET /stats/world-peace?exclude=<session_id>` omits the caller so the number
+  can honestly be described as *others*.
+- **Hold length comes from the chosen duration** (`app/src/hooks/usePresence.ts`):
+  a timed session declares its whole length plus grace up front and so needs **no
+  heartbeat at all**; only open-ended sessions ping, because only they have an
+  unknowable end. Don't "simplify" this into a long fixed window — a hold that
+  outlives the actual sit is what made the old number describe people who had
+  already left.
+- **`current_active_estimate` is optional and often `0`.** Treat `0` exactly like
+  absent in the UI — never render "0 meditators" beside copy saying others are
+  meditating. Session copy lives in `story.ts` (`sessionPresence`) and only
+  claims company when there genuinely is some.
+- **Session ids** are client-generated, opaque, ephemeral, and tied to nothing —
+  not a user or device identifier, never persisted. The backend length/charset
+  check is a storage guard, not identity.
 - **CORS**: the server sends `Access-Control-Allow-Origin: *`. Required because
   the react-native-web build calls the API cross-origin from a browser; safe
   because the API is anonymous (no cookies, credentials, or user data).
@@ -177,6 +198,12 @@ Split across two layers — deliberately, not everything lives in the global red
 - No persisted client store, no auth state, no user identifiers anywhere.
 
 ## API contract (PRD "Backend architecture" / "Recommended MVP decision set")
+
+Presence routes (added after the MVP contract below, see "Presence vs.
+completions" above): `POST /presence/start` · `POST /presence/heartbeat` ·
+`POST /presence/end`, each taking `{ session_id, hold_seconds? }` and returning
+`{ current_active_estimate }` counting everyone *except* the caller.
+
 
 - `POST /meditations/world-peace` — increments the World Peace counter. No body
   needed (topic is implied by the URL). Fires **once, on arrival at the Stats
