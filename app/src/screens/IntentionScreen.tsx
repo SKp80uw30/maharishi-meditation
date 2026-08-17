@@ -1,12 +1,14 @@
-import React, { Dispatch, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { Dispatch, useEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
 import { AppAction } from '../state/appReducer';
-import { BackButton, Button, Card, ScreenContainer, Sheet, StoryTimeline } from '../components';
+import { BackButton, Button, Card, ScreenContainer, StoryOnboarding } from '../components';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
 import { space } from '../theme/spacing';
+import { shadow } from '../theme/effects';
 import { worldPeaceApi, type WorldPeaceStats } from '../api/worldPeace';
 import { narrative } from '../content/story';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 // design_handoff_world_peace_mvp/components/IntentionScreen.jsx +
 // README "2. World Peace intention confirmation" — the emotional anchor of the
@@ -16,6 +18,14 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [showStory, setShowStory] = useState(false);
+  // null = the API gave no estimate (it's optional in the contract) — the
+  // count block is hidden entirely then. Showing a literal "0 meditators"
+  // would contradict the supporting line right next to it.
+  const [displayCount, setDisplayCount] = useState<number | null>(null);
+  const [prevCount, setPrevCount] = useState<number | null>(null);
+
+  const scaleAnim = useRef(new Animated.Value(1)).current;
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     let mounted = true;
@@ -25,6 +35,22 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
         const result = await worldPeaceApi.getStats();
         if (mounted) {
           setStats(result);
+          const newCount = result?.current_active_estimate ?? null;
+
+          // Trigger a pulse animation when the count changes
+          if (newCount !== prevCount) {
+            if (newCount != null && reducedMotion === false) {
+              scaleAnim.setValue(1.1);
+              Animated.timing(scaleAnim, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+              }).start();
+            }
+            setPrevCount(newCount);
+          }
+
+          setDisplayCount(newCount);
           setLoading(false);
         }
       } catch (error) {
@@ -43,10 +69,9 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
       mounted = false;
       clearInterval(interval);
     };
-  }, []);
+  }, [prevCount, scaleAnim, reducedMotion]);
 
-  const activeCount = stats?.current_active_estimate ?? 0;
-  const activeText = activeCount === 1 ? 'meditator' : 'meditators';
+  const activeText = displayCount === 1 ? 'meditator' : 'meditators';
 
   return (
     <ScreenContainer style={styles.container} testID="screen-intention">
@@ -54,7 +79,9 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
 
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
         <Text style={styles.microLabel}>Today's intention</Text>
-        <Text style={styles.headline}>What energy are you{'\n'}sending into the world today?</Text>
+        <Text style={styles.headline}>
+          What energy are you{'\n'}sending into the world today?
+        </Text>
 
         <Card style={styles.card}>
           <View style={styles.cardHeader}>
@@ -71,26 +98,29 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
                 <Text style={styles.deepDiveLinkText}>Go deeper →</Text>
               </Pressable>
             </View>
-            <View style={styles.activeCount}>
-              <Text style={styles.activeNumber}>{activeCount}</Text>
-              <Text style={styles.activeLabel}>{activeText}</Text>
-            </View>
+            {displayCount != null && (
+              <View style={styles.activeCount}>
+                <Animated.Text
+                  style={[
+                    styles.activeNumber,
+                    {
+                      transform: [{ scale: scaleAnim }],
+                    },
+                  ]}
+                >
+                  {displayCount}
+                </Animated.Text>
+                <Text style={styles.activeLabel}>{activeText}</Text>
+              </View>
+            )}
           </View>
         </Card>
       </ScrollView>
 
       <Button label="Begin your session" onPress={() => dispatch({ type: 'CONTINUE' })} fullWidth style={styles.cta} />
 
-      {/* Story deep-dive modal */}
-      <Sheet isOpen={showStory} onClose={() => setShowStory(false)} title="The Story">
-        <ScrollView showsVerticalScrollIndicator>
-          <Text style={styles.storyText}>{narrative.originStory}</Text>
-          <View style={{ height: space[8] }}>
-            <Text style={styles.timelineHeading}>Timeline of Research</Text>
-          </View>
-          <StoryTimeline entries={narrative.timeline} />
-        </ScrollView>
-      </Sheet>
+      {/* Story immersive onboarding */}
+      <StoryOnboarding isOpen={showStory} onClose={() => setShowStory(false)} />
     </ScreenContainer>
   );
 }
@@ -119,12 +149,16 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: 26,
     color: colors.textPrimary,
+    letterSpacing: tracking(0.015, 26),
     lineHeight: leading(1.3, 26),
     textAlign: 'center',
   },
   card: {
     width: '100%',
     gap: space[2],
+    backgroundColor: 'rgba(255, 125, 92, 0.04)',
+    borderLeftWidth: 3,
+    borderLeftColor: colors.brandPrimary,
   },
   cardHeader: {
     flexDirection: 'row',

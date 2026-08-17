@@ -34,14 +34,15 @@ export default function Sheet({ isOpen, onClose, title, children, testID }: Shee
       transparent
       animationType="fade"
       onRequestClose={onClose}
-      testID={testID}
       accessibilityLabel={title || 'Sheet dialog'}
     >
-      {/* Backdrop */}
+      {/* Backdrop — carries the testID so tests (and tools) can target the
+       * dismiss surface directly; Modal itself isn't pressable. */}
       <Pressable
         style={[StyleSheet.absoluteFill, { backgroundColor: colors.surfaceOverlay }]}
         onPress={onClose}
         accessible={false}
+        testID={testID}
       />
 
       {/* Sheet container */}

@@ -1,17 +1,16 @@
 import { Redis } from '@upstash/redis';
 import { createRedisWorldPeaceStore, WorldPeaceStore } from './worldPeaceStore';
 
-// Railway provides Redis via REDIS_URL env var (e.g. redis://user:pass@host:port)
-// Upstash (alternative) uses UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN
-// This client auto-detects which is available.
+// @upstash/redis is a REST client: it needs UPSTASH_REDIS_REST_URL and
+// UPSTASH_REDIS_REST_TOKEN (set as Railway env vars). It cannot speak the
+// redis:// wire protocol, so a Railway-provisioned REDIS_URL is *not* usable
+// here — switching to Railway's own Redis would mean switching client
+// libraries, not just env vars.
 let store: WorldPeaceStore | null = null;
 
 export function getWorldPeaceStore(): WorldPeaceStore {
   if (!store) {
-    const redis = process.env.REDIS_URL
-      ? new Redis({ url: process.env.REDIS_URL })
-      : Redis.fromEnv();
-    store = createRedisWorldPeaceStore(redis);
+    store = createRedisWorldPeaceStore(Redis.fromEnv());
   }
   return store;
 }

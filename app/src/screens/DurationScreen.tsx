@@ -1,9 +1,9 @@
-import React, { Dispatch } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { Dispatch, useEffect, useRef } from 'react';
+import { Pressable, StyleSheet, Text, View, Animated } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
 import { BackButton, Button, ScreenContainer } from '../components';
 import { colors } from '../theme/colors';
-import { fontFamily, fontSize } from '../theme/typography';
+import { fontFamily, fontSize, tracking } from '../theme/typography';
 import { radius, space } from '../theme/spacing';
 import { shadow } from '../theme/effects';
 
@@ -25,12 +25,39 @@ export default function DurationScreen({
 }) {
   const select = (value: number | 'open') => dispatch({ type: 'SELECT_DURATION', duration: value });
 
+  const opacityAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(16)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacityAnim, {
+        toValue: 1,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: true,
+      }),
+    ]).start();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <ScreenContainer style={styles.container} testID="screen-duration">
       <BackButton onPress={() => dispatch({ type: 'BACK' })} />
 
-      <View style={styles.middle}>
-        <Text style={styles.title}>Choose your duration</Text>
+      <Animated.View
+        style={[
+          styles.middle,
+          {
+            opacity: opacityAnim,
+            transform: [{ translateY: slideAnim }],
+          },
+        ]}
+      >
+        <Animated.Text style={styles.title}>Choose your duration</Animated.Text>
 
         <View style={styles.grid}>
           {ROWS.map((row) => (
@@ -56,7 +83,7 @@ export default function DurationScreen({
             fullWidth
           />
         </View>
-      </View>
+      </Animated.View>
 
       <Button
         label="Begin meditation"
@@ -113,6 +140,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.headingL,
     color: colors.textPrimary,
+    letterSpacing: tracking(0.01, fontSize.headingL),
   },
   grid: {
     width: '100%',
@@ -135,7 +163,7 @@ const styles = StyleSheet.create({
   tileUnselected: {
     borderWidth: 1.5,
     borderColor: colors.borderDefault,
-    backgroundColor: colors.surfaceCard,
+    backgroundColor: 'rgba(255, 221, 170, 0.08)',
     boxShadow: shadow.s,
   },
   tileSelected: {

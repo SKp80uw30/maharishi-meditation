@@ -28,7 +28,7 @@ describe('StatsScreen', () => {
     await render(
       <StatsScreen state={{ ...initialState, screen: 'stats', duration: 20 }} dispatch={dispatch} apiClient={client} />
     );
-    expect(screen.getByText(/Thank you for your 20 minutes\./)).toBeTruthy();
+    expect(screen.getByText(/Thank you for your 20 minutes of presence\./)).toBeTruthy();
   });
 
   it('shows the Open-mode thank-you copy when duration is "open"', async () => {
@@ -37,7 +37,7 @@ describe('StatsScreen', () => {
     await render(
       <StatsScreen state={{ ...initialState, screen: 'stats', duration: 'open' }} dispatch={dispatch} apiClient={client} />
     );
-    expect(screen.getByText(/Thank you for your session\./)).toBeTruthy();
+    expect(screen.getByText(/Thank you for your presence\./)).toBeTruthy();
   });
 
   it('dispatches RESTART when "Meditate again" is tapped', async () => {

@@ -33,6 +33,25 @@ describe('IntentionScreen', () => {
     });
   });
 
+  it('hides the meditator count entirely when the API gives no active estimate', async () => {
+    (worldPeaceModule.worldPeaceApi.getStats as jest.Mock).mockResolvedValue({
+      total_today: 100,
+      total_all_time: 5000,
+      // current_active_estimate deliberately absent — it's optional in the
+      // contract, and a literal "0 meditators" would undercut the premise.
+    });
+    const dispatch = jest.fn();
+    await render(
+      <SafeAreaProvider>
+        <IntentionScreen dispatch={dispatch} />
+      </SafeAreaProvider>
+    );
+
+    await waitFor(() => {
+      expect(screen.queryByText(/meditators?/)).toBeNull();
+    });
+  });
+
   it('dispatches CONTINUE on the CTA', async () => {
     const dispatch = jest.fn();
     await render(

@@ -1,12 +1,14 @@
-import React, { Dispatch, useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { Dispatch, useEffect, useRef, useState } from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
 import { BlobMark, Button, Card, ScreenContainer, Sheet, StoryTimeline } from '../components';
 import { WorldPeaceApiClient, WorldPeaceStats, worldPeaceApi } from '../api/worldPeace';
 import { colors } from '../theme/colors';
-import { fontFamily, fontSize, leading } from '../theme/typography';
+import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
 import { space } from '../theme/spacing';
+import { shadow } from '../theme/effects';
 import { narrative } from '../content/story';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type Props = {
   state: AppState;
@@ -22,7 +24,13 @@ type Props = {
 // for why: covers both natural timeout and "End early" with one trigger).
 export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi }: Props) {
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
+  // True once the increment+fetch has finished, success or failure — the
+  // scale-in below must also run for the "—" placeholders on failure, or
+  // they'd stay at scale 0 and the cards would look empty.
+  const [statsSettled, setStatsSettled] = useState(false);
   const [showStory, setShowStory] = useState(false);
+  const scaleAnim = useRef(new Animated.Value(0)).current;
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     let cancelled = false;
@@ -35,6 +43,8 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
         // Stats are inspirational, not load-bearing — a failed fetch shouldn't
         // block the ritual. Numbers just stay as the "—" placeholder below and
         // "Meditate again" still works.
+      } finally {
+        if (!cancelled) setStatsSettled(true);
       }
     })();
     return () => {
@@ -44,21 +54,39 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const isOpen = state.duration === 'open';
-  const thanksLine = isOpen ? 'your session' : `your ${state.duration} minutes`;
+  // Separate effect to animate stat numbers (or placeholders) in once the
+  // fetch settles either way
+  useEffect(() => {
+    if (!statsSettled || reducedMotion === null) return;
+    if (reducedMotion) {
+      scaleAnim.setValue(1);
+      return;
+    }
+    Animated.spring(scaleAnim, {
+      toValue: 1,
+      useNativeDriver: true,
+      speed: 8,
+      bounciness: 3,
+    }).start();
+  }, [statsSettled, scaleAnim, reducedMotion]);
+
+  const minutes = state.duration === 'open' ? null : state.duration;
 
   return (
     <ScreenContainer style={styles.container} testID="screen-stats">
       <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
         <BlobMark size={64} glow={false} />
-        <Text style={styles.heading}>Session complete</Text>
-        <Text style={styles.supporting}>
-          Thank you for {thanksLine}. Others were meditating alongside you at the same time.
-        </Text>
+        <Text style={styles.heading}>You held the space.</Text>
+        <Text style={styles.supporting}>{narrative.statsThankYou(minutes)}</Text>
 
         <View style={styles.stats}>
-          <StatRow label="World Peace meditations today" value={stats?.total_today} valueColor={colors.brandPrimary} />
-          <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} />
+          <StatRow
+            label="World Peace meditations today"
+            value={stats?.total_today}
+            valueColor={colors.brandPrimary}
+            scaleAnim={scaleAnim}
+          />
+          <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} scaleAnim={scaleAnim} />
         </View>
 
         {/* Fact card with deep-dive link */}
@@ -78,7 +106,7 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
 
       <View style={styles.buttonGroup}>
         <Button label="Meditate again" onPress={() => dispatch({ type: 'RESTART' })} fullWidth />
-        <Button label="Home" onPress={() => dispatch({ type: 'HOME' })} variant="outline" fullWidth />
+        <Button label="Home" onPress={() => dispatch({ type: 'HOME' })} variant="secondary" fullWidth />
       </View>
 
       {/* Story deep-dive modal */}
@@ -95,11 +123,31 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
   );
 }
 
-function StatRow({ label, value, valueColor }: { label: string; value: number | undefined; valueColor: string }) {
+function StatRow({
+  label,
+  value,
+  valueColor,
+  scaleAnim,
+}: {
+  label: string;
+  value: number | undefined;
+  valueColor: string;
+  scaleAnim: Animated.Value;
+}) {
   return (
     <Card style={styles.statCard}>
       <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, { color: valueColor }]}>{value != null ? value.toLocaleString() : '—'}</Text>
+      <Animated.Text
+        style={[
+          styles.statValue,
+          { color: valueColor },
+          {
+            transform: [{ scale: scaleAnim }],
+          },
+        ]}
+      >
+        {value != null ? value.toLocaleString() : '—'}
+      </Animated.Text>
     </Card>
   );
 }
@@ -120,6 +168,7 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.headingL,
     color: colors.textPrimary,
+    letterSpacing: tracking(0.01, fontSize.headingL),
     textAlign: 'center',
   },
   supporting: {
@@ -138,6 +187,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
+    backgroundColor: 'rgba(255, 201, 139, 0.06)',
   },
   statLabel: {
     fontFamily: fontFamily.regular,

@@ -216,26 +216,22 @@ move on. Don't check a box without actually running its gate.
     — all against a fake store/Redis double, no live network or credentials
     needed for this phase
 
-- [ ] **Phase 11 — Connect to live backend** ⏸ deferred, by user choice (2026-07-21)
-  - Swap the app's mock API client for real HTTP calls via `EXPO_PUBLIC_API_URL`
-  - **Deliberately not blocking the rest of the build**: needs an Upstash Redis
-    database (URL + REST token) and a Netlify site — account-owned resources.
-    Offered three paths (self-provision a temporary dev DB, user supplies their
-    own Netlify/Upstash, or skip for now) — user chose to skip for now since the
-    app is fully functional on the mock backend already. Revisit whenever ready;
-    it's a small, contained change since `app/src/api/worldPeace.ts` already
-    hides the mock vs. real client behind one interface.
-  - **When picking this back up:**
-    1. Create an Upstash Redis database and a Netlify site (or reuse existing
-       ones — this ecosystem already uses Netlify for other projects)
-    2. Set `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` as Netlify site
-       env vars (never commit them)
-    3. Deploy `backend/` to that site (`netlify.toml` is already configured)
-    4. Add a real HTTP implementation of `WorldPeaceApiClient` in
-       `app/src/api/worldPeace.ts` (or a new file) that calls the deployed
-       `EXPO_PUBLIC_API_URL`, and switch `worldPeaceApi`'s export to it
-  - **Gate (once resumed):** integration test against `netlify dev` (or the
-    deployed URL) confirms increment + stats round-trip correctly
+- [x] **Phase 11 — Connect to live backend** (done 2026-07-2x, commits `2a9aa9e`
+      + `4f75dac`; this entry was left stale and is corrected here)
+  - Was deferred on 2026-07-21 for lack of account-owned resources, then picked
+    back up: **the deploy target changed from Netlify Functions to Railway**
+    (`2a9aa9e` refactored `backend/` to a plain Express server, root `Procfile`
+    runs it). Live at `https://maharishi-meditation-production.up.railway.app`
+    — `/health`, `/stats/world-peace`, `/meditations/world-peace` all verified
+    responding 200 with real Upstash-backed counters.
+  - `app/src/api/worldPeace.ts` now picks the real HTTP client when
+    `EXPO_PUBLIC_API_URL` is set (it's in `app/.env`, gitignored) and falls back
+    to the seeded mock for offline dev.
+  - **Cleanup done in Phase 14** (below): the abandoned Netlify layer
+    (`backend/netlify/`, root `netlify.toml`) was deleted, and the `build`
+    script was made real — it had been `tsc` against a config with
+    `noEmit: true`, so `npm run build` emitted nothing and the `npm start`
+    the Procfile invokes could never have found `dist/server.js`.
 
 - [x] **Phase 12 — Full-flow QA pass**
   - **Playwright MCP tool itself never worked this session** ("Connection
@@ -299,7 +295,55 @@ move on. Don't check a box without actually running its gate.
     ip -4` if `100.123.223.78` stops working. Real native-build testing on this
     device needs Phase 13's EAS development build instead of Expo Go.
 
-- [ ] **Phase 14 — Narrative & whimsy layer**
+- [x] **Phase 14 — Narrative & whimsy layer** (completed 2026-08-17)
+  - Landed as spec'd below, plus a `StoryOnboarding` flow (5 beats: origin →
+    the -16% finding → research timeline → "many minds, one field" ripples →
+    "now it's you") reachable from Intention's "Go deeper" link. Kept it opt-in
+    off the main ritual rather than gating first launch, consistent with the
+    phasing note below.
+  - **Fixed while completing it** (the work was left mid-flight and failing):
+    - 11 failing tests across 3 suites. Root cause of 8 of them was
+      `react-native-safe-area-context`: its real provider yields no insets under
+      Jest, so `<SafeAreaProvider>` rendered *nothing* (hiding the whole tree)
+      and `useSafeAreaInsets()` threw without one. Fixed globally with the
+      library's own shipped mock via `app/jest.setup.js` — worth knowing for any
+      future component that takes insets.
+    - Stats thank-you copy moved into `story.ts` as `statsThankYou(minutes)`;
+      it was still inline prose in the screen, contradicting this phase's own
+      "no inline narrative in screens" rule.
+    - `Sheet`'s `testID` sat on the `Modal` (not pressable), so the
+      backdrop-dismiss test could never pass; moved to the backdrop `Pressable`.
+    - Reduce-motion was re-implemented ad hoc per component. Replaced with one
+      `useReducedMotion()` hook returning `boolean | null`, where `null` means
+      "system check hasn't resolved yet" and animations hold off — otherwise
+      motion flashes for exactly the users who asked for none. All four
+      animation sites now use it. Deleted `useCountUpAnimation.ts` (never
+      imported anywhere).
+    - **Real bug in `StoryBeat5`:** `new Animated.Value(0)` was created inline
+      each render and used as a `useEffect` dependency, so the effect re-ran
+      every render and re-fetched the API in a loop. Now a `useRef`.
+    - Honesty fixes: Intention and Beat 5 rendered a literal "0 meditators"
+      when the API returns no `current_active_estimate` (it's optional in the
+      contract), directly contradicting the copy beside it. Both now hide the
+      count and soften the sentence.
+    - Layout: story beats collided with the bottom nav. Progress dots moved
+      into the nav bar (which got a solid backdrop so scrolling timeline text
+      passes behind it), and Beat 4 got bottom clearance.
+  - **CORS:** the web build calling the Railway API was blocked by CORS in
+    every browser run. Added permissive CORS to the Express server — safe here
+    because the API is anonymous by design (no cookies, credentials, or user
+    data). **Not live until `backend/` is redeployed to Railway.**
+  - **Gate — passed:** `tsc --noEmit` clean in both packages · `jest` 70/70 in
+    `app/` (was 53/64) and 10/10 in `backend/` · full Playwright click-through
+    of all 6 screens + all 5 story beats + both story surfaces with zero page
+    errors (only the expected CORS errors, which the redeploy clears)
+  - **Tooling gotcha worth remembering:** this Metro dev server does *not* pick
+    up file edits reliably — it served a graph frozen at start-up, so
+    screenshots kept showing pre-edit styling while a direct bundle fetch showed
+    the new code. Restart with `--clear` before any visual QA run, or you will
+    debug a bug that isn't there.
+
+- [x] **Phase 14 (original spec, for reference)**
   - **Why this matters:** Phase 12's testing revealed the core issue — without the
     story of *why* group meditation matters, the app feels like a bare timer with
     a counter. Adding the Maharishi Effect narrative (50 years of research on

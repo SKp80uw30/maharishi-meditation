@@ -1,9 +1,24 @@
-import type { Handler } from '@netlify/functions';
 import type { WorldPeaceStore } from './worldPeaceStore';
 
 // Factories (not the handlers themselves) so tests can inject a fake store
-// without touching Redis or env vars — the real netlify/functions/*.ts entry
-// points wire in the real Redis-backed store (see redisClient.ts).
+// without touching Redis or env vars — server.ts wires in the real
+// Redis-backed store (see redisClient.ts).
+//
+// The event/response shapes are deliberately transport-agnostic (a leftover
+// virtue of the original Netlify Functions deploy target): the Express layer
+// adapts them, and tests drive them without any HTTP at all.
+
+export interface HandlerEvent {
+  httpMethod: string;
+}
+
+export interface HandlerResponse {
+  statusCode: number;
+  headers: Record<string, string>;
+  body: string;
+}
+
+export type Handler = (event: HandlerEvent) => Promise<HandlerResponse>;
 
 const JSON_HEADERS = { 'content-type': 'application/json' };
 

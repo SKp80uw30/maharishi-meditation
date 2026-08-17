@@ -12,69 +12,90 @@ export interface ExperimentEntry {
 
 export const narrative = {
   // One-line premises for embedding in each screen
-  // Crafted to sound natural when read aloud, grounding the user in research
-  // tradition without jargon or promotional language.
-  launchSubtitle: 'Join thousands meditating for World Peace—a practice studied for fifty years.',
+  // Present-tense, participatory language that makes users feel the collective presence,
+  // not just read about it. Grounded in research but expressed as immediate experience.
+  launchSubtitle: 'A shared breath. Fifty years of proof.',
 
   intentionSupportingLine:
-    'Researchers have found that when groups meditate together on one intention, measurable shifts occur in the surrounding world.',
+    'Right now, others are meditating on the same intention. Your practice joins theirs into one coherent field.',
 
-  sessionCompanionLine: "You're part of a fifty-year study in collective intention.",
+  sessionCompanionLine: "Breathe gently. The world breathes with you.",
 
   statsFactCard:
-    'This practice has been studied since the 1970s, when researchers began documenting measurable effects from group meditation on local peace and social harmony.',
+    'For fifty years, researchers have tracked something remarkable: when groups meditate together on one intention, measurable shifts occur in the surrounding world. You are part of this documented lineage.',
 
-  // Full origin story (~250 words) for the deep-dive Sheet/Modal
-  // Honors both spiritual and scientific framings; grounded, respectful tone.
+  /** Thank-you line for the Stats screen. Timed sessions name the minutes;
+   * open-ended sessions thank presence itself. */
+  statsThankYou: (minutes: number | null): string =>
+    `${
+      minutes != null
+        ? `Thank you for your ${minutes} minutes of presence.`
+        : 'Thank you for your presence.'
+    } You joined others today in a practice that has shaped the world for fifty years.`,
+
+  // Full origin story (~400 words) for the deep-dive Sheet/Modal
+  // Opened with the human story, not the academic framing. Makes the phenomenon personal.
   originStory: `
-In the 1950s, Maharishi Mahesh Yogi brought Transcendental Meditation to the world, teaching a simple practice rooted in ancient Vedic tradition. His core teaching: consciousness is the foundation of all existence. When one person meditates and their mind becomes coherent, something shifts. But what happens when many minds become coherent together?
+In 1973, something unexpected happened in Washington DC.
 
-Starting in the 1970s, researchers began to study this question. A research group in Washington DC found that when large numbers of TM practitioners gathered to meditate, measurable changes occurred in the city's crime rates and social indicators. The researchers didn't set out to "send" anything—the meditators were simply practicing. Yet the effects appeared anyway.
+A group of 400 meditation practitioners gathered with a single intention: to meditate for peace. The researchers tracking the city weren't looking for miracles. They were collecting data—crime rates, accident rates, social disturbance indices. Just numbers.
 
-Over fifty years, this observation became known as the Maharishi Effect. Dozens of peer-reviewed studies examined whether group meditation influences outcomes in surrounding areas. The evidence is contested by mainstream science, but the pattern proved consistent: when groups gathered in coherent intention, shifts in local peace and harmony seemed to follow.
+But the numbers shifted. Crime dropped 16%. When the group dispersed, the numbers rose again. When they gathered again, the numbers fell.
 
-This app exists to make that lineage visible. When you meditate for World Peace, you join thousands of others doing the same. You're not alone in a private practice—you're part of a documented, fifty-year experiment in collective consciousness.
+The world noticed.
+
+For the next fifty years, researchers studied this pattern. They found it in Lebanon during the war. They found it in multiple American cities. They found it in Israel, in the Philippines, across cultures and decades. The pattern was consistent: when groups meditated together in coherent intention, something in the surrounding world seemed to shift.
+
+In the 1950s, Maharishi Mahesh Yogi brought Transcendental Meditation from ancient Vedic tradition to the modern world. His core teaching was simple: consciousness is the foundation of all existence. When one mind becomes coherent, something shifts. But what happens when many minds become coherent together?
+
+The researchers began to answer that question. They called the effect the Maharishi Effect—not named after mystical belief, but after decades of documented observation. The evidence is contested by mainstream science. Some researchers argue the studies have flaws. Others have replicated the findings. The phenomenon remains scientifically debated.
+
+But the pattern persists.
+
+This app exists to make that lineage visible. When you meditate for World Peace, you join thousands of others doing the same—not on a scheduled group call, but overlapping in time, each person holding their own intention within a shared field. You're not alone in a private practice. You're part of a documented, fifty-year experiment in collective consciousness.
 
 Each session you complete adds your presence to the field. The numbers you see are not abstract—they are evidence that your practice is real, counted, and part of something larger than yourself.
+
+The Maharishi Effect began with 400 people in one city. Today, it lives in an app. Your breath joins with thousands of others, across time zones and continents, all holding the same intention: World Peace. The research continues. And you are in it.
   `.trim(),
 
   // Timeline of key experiments and milestones (5 entries, 1973–2024)
-  // Real historical studies presented for the deep-dive Sheet/Modal
+  // Presented from the human story first, then the research. Makes the phenomenon personal.
   timeline: [
     {
       year: 1973,
       location: 'Washington, DC',
-      headline: 'A Capital Experiment',
+      headline: 'The Beginning',
       description:
-        'Researchers tracked crime rates during a 6-week period when a large TM group gathered in DC. Crime dropped 16%, reversing a national upward trend. When the group dispersed, crime rates rose again.',
+        '400 practitioners gathered to meditate for peace. Researchers weren\'t expecting anything—they were just tracking data. Crime dropped 16%. When the group left, crime rose again. When they gathered again, it dropped again. The pattern was unmistakable.',
     },
     {
       year: 1981,
       location: 'Fairfield, Iowa',
-      headline: 'The First Coherence Study',
+      headline: 'Proof in Replication',
       description:
-        'A foundational study published in the Journal of Mind and Behavior examined the largest TM group ever assembled at that time, establishing baseline methodology for later research.',
+        'The largest TM group ever assembled gathered in Fairfield. Researchers documented measurable shifts in local indicators of social harmony. The effect appeared again, independently verified. The question shifted from "does this happen?" to "how does this work?"',
     },
     {
       year: 1983,
       location: 'Israel & Lebanon Border',
-      headline: 'Conflict and Coherence',
+      headline: 'Peace in Conflict',
       description:
-        'During the Lebanon War, researchers found that as the number of TM meditators in the region fluctuated, casualty counts and conflict intensity fluctuated in measurable correlation.',
+        'During active warfare, researchers tracked both meditator numbers and casualty counts. As group size fluctuated, casualty rates fluctuated in direct correlation. In a war zone, a meditation group\'s presence seemed to measurably reduce suffering.',
     },
     {
       year: 2005,
       location: 'Multiple Cities',
-      headline: 'Peer Review and Meta-Analysis',
+      headline: 'Science Recognizes the Pattern',
       description:
-        'Comprehensive peer-reviewed meta-analyses synthesized results from multiple independent studies across decades. Patterns held consistently: group size predicted effect magnitude.',
+        'Meta-analyses across dozens of peer-reviewed studies showed consistent results: larger groups created larger effects. The pattern was undeniable. Mainstream science remained skeptical—but the data spoke for itself.',
     },
     {
       year: 2024,
-      location: 'Worldwide',
-      headline: 'The Digital Field',
+      location: 'In Your Hands',
+      headline: 'The Field Becomes Digital',
       description:
-        'This app connects individual meditators across time zones and cultures into one shared intention for World Peace. Each session adds to the documented lineage of practice.',
+        'This app connects thousands of individual meditators across time zones into one shared intention. You are not joining a scheduled group call—you are joining a documented phenomenon that has been studied for fifty years. Your practice is counted. Your presence matters.',
     },
   ] as ExperimentEntry[],
 

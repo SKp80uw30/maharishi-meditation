@@ -5,7 +5,7 @@ import { fontFamily, fontSize } from '../theme/typography';
 import { radius, space } from '../theme/spacing';
 import { shadow } from '../theme/effects';
 
-type Variant = 'primary' | 'outline';
+type Variant = 'primary' | 'outline' | 'secondary';
 
 type Props = {
   label: string;
@@ -17,10 +17,12 @@ type Props = {
 };
 
 /** Pill CTA button. `primary` = filled brand-coral with the glow shadow (Launch,
- * Intention, Duration, Stats). `outline` = transparent with a translucent white
- * border, used only on the dark Session screen ("End early"/"End session"). */
+ * Intention, Duration, Stats). `outline` = transparent with light border & text,
+ * used only on the dark Session screen. `secondary` = bordered button with dark
+ * text for light backgrounds (Stats screen). */
 export default function Button({ label, onPress, variant = 'primary', fullWidth, style, testID }: Props) {
   const isPrimary = variant === 'primary';
+  const isSecondary = variant === 'secondary';
   return (
     <Pressable
       onPress={onPress}
@@ -29,13 +31,16 @@ export default function Button({ label, onPress, variant = 'primary', fullWidth,
       accessibilityLabel={label}
       style={({ pressed }) => [
         styles.base,
-        isPrimary ? styles.primary : styles.outline,
+        isPrimary ? styles.primary : isSecondary ? styles.secondary : styles.outline,
         fullWidth && styles.fullWidth,
-        pressed && { opacity: 0.85 },
+        pressed && {
+          opacity: 0.9,
+          transform: [{ scale: 0.98 }],
+        },
         style,
       ]}
     >
-      <Text style={isPrimary ? styles.primaryLabel : styles.outlineLabel}>{label}</Text>
+      <Text style={isPrimary ? styles.primaryLabel : isSecondary ? styles.secondaryLabel : styles.outlineLabel}>{label}</Text>
     </Pressable>
   );
 }
@@ -72,5 +77,17 @@ const styles = StyleSheet.create({
     color: colors.sessionTextSecondary,
     fontFamily: fontFamily.regular,
     fontSize: fontSize.bodyM,
+  },
+  secondary: {
+    backgroundColor: 'transparent',
+    borderWidth: 1.5,
+    borderColor: colors.borderDefault,
+    paddingVertical: space[3] - 2,
+    paddingHorizontal: space[6],
+  },
+  secondaryLabel: {
+    color: colors.textPrimary,
+    fontFamily: fontFamily.bold,
+    fontSize: 17,
   },
 });
