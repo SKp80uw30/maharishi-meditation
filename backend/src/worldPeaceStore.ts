@@ -15,7 +15,7 @@ export interface WorldPeaceStore {
   getStats(): Promise<WorldPeaceStats>;
 }
 
-interface RedisClient {
+export interface RedisClient {
   incr(key: string): Promise<number>;
   mget(...keys: string[]): Promise<(number | null)[]>;
   sadd(key: string, member: string, expirySeconds?: number): Promise<number>;

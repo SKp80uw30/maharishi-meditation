@@ -1,10 +1,10 @@
-import { createRedisWorldPeaceStore, WorldPeaceStore } from './worldPeaceStore';
+import { createRedisWorldPeaceStore, RedisClient, WorldPeaceStore } from './worldPeaceStore';
 
-// Simple interface that both redis and @upstash/redis implement
-interface RedisLike {
-  incr(key: string): Promise<number>;
-  mget<T extends unknown[]>(...keys: string[]): Promise<(number | null)[]>;
-}
+// The commands both the `redis` (Railway, RESP) and `@upstash/redis` (REST)
+// adapters below must provide. Imported from the store rather than re-declared
+// here: a local copy silently drifted when the store started using sadd/scard
+// for the active-session count, which broke every deploy until it was fixed.
+type RedisLike = RedisClient;
 
 let store: WorldPeaceStore | null = null;
 

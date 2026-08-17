@@ -5,6 +5,21 @@ import { getWorldPeaceStore } from './redisClient';
 const app = express();
 const port = process.env.PORT || 3000;
 
+// The API is anonymous and public by design (no credentials, no cookies, no
+// user data), so a wildcard origin is safe. Required by the react-native-web
+// build, which calls this API cross-origin from the browser — without it every
+// browser request fails at the preflight.
+app.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
+
 let store: ReturnType<typeof getWorldPeaceStore> | null = null;
 let storeError: Error | null = null;
 

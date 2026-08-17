@@ -26,3 +26,4 @@ coverage/
 
 # Editor
 .vscode/
+backend/dist/
