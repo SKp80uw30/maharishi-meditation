@@ -1,19 +1,27 @@
+import { createPresenceStore, PresenceStore } from './presenceStore';
 import { createRedisWorldPeaceStore, RedisClient, WorldPeaceStore } from './worldPeaceStore';
 
 // The commands both the `redis` (Railway, RESP) and `@upstash/redis` (REST)
 // adapters below must provide. Imported from the store rather than re-declared
-// here: a local copy silently drifted when the store started using sadd/scard
-// for the active-session count, which broke every deploy until it was fixed.
+// here: a local copy silently drifted when the store started needing new
+// commands, which broke every deploy until it was fixed.
 type RedisLike = RedisClient;
 
-let store: WorldPeaceStore | null = null;
+export type Stores = { worldPeace: WorldPeaceStore; presence: PresenceStore };
 
-export function getWorldPeaceStore(): WorldPeaceStore {
-  if (!store) {
+let stores: Stores | null = null;
+
+/** Both stores share one Redis connection. Completion counters and live
+ * presence are separate concerns (see presenceStore.ts) but the same backend. */
+export function getStores(): Stores {
+  if (!stores) {
     const redis = createRedisClient();
-    store = createRedisWorldPeaceStore(redis);
+    stores = {
+      worldPeace: createRedisWorldPeaceStore(redis),
+      presence: createPresenceStore(redis),
+    };
   }
-  return store;
+  return stores;
 }
 
 function createRedisClient(): RedisLike {
@@ -57,17 +65,25 @@ function createOfficialRedisClient(redisUrl: string): RedisLike {
       const values = await client.mGet(keys);
       return values.map((v: string | null) => (v ? parseInt(v, 10) : null));
     },
-    async sadd(key: string, member: string, expirySeconds?: number): Promise<number> {
+    async zadd(key: string, score: number, member: string): Promise<number> {
       await ensure();
-      const result = await client.sAdd(key, member);
-      if (expirySeconds) {
-        await client.expire(key, expirySeconds);
-      }
-      return result;
+      return client.zAdd(key, [{ score, value: member }]);
     },
-    async scard(key: string): Promise<number> {
+    async zrem(key: string, member: string): Promise<number> {
       await ensure();
-      return client.sCard(key);
+      return client.zRem(key, member);
+    },
+    async zremrangebyscore(key: string, min: number, max: number): Promise<number> {
+      await ensure();
+      return client.zRemRangeByScore(key, min, max);
+    },
+    async zcard(key: string): Promise<number> {
+      await ensure();
+      return client.zCard(key);
+    },
+    async zscore(key: string, member: string): Promise<number | null> {
+      await ensure();
+      return client.zScore(key, member);
     },
   };
 }
@@ -86,15 +102,20 @@ function createUpstashClient(url: string, token: string): RedisLike {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return redis.mget(...keys) as Promise<(number | null)[]>;
     },
-    async sadd(key: string, member: string, expirySeconds?: number): Promise<number> {
-      const result = await redis.sadd(key, member);
-      if (expirySeconds) {
-        await redis.expire(key, expirySeconds);
-      }
-      return result;
+    async zadd(key: string, score: number, member: string): Promise<number> {
+      return redis.zadd(key, { score, member });
     },
-    async scard(key: string): Promise<number> {
-      return redis.scard(key);
+    async zrem(key: string, member: string): Promise<number> {
+      return redis.zrem(key, member);
+    },
+    async zremrangebyscore(key: string, min: number, max: number): Promise<number> {
+      return redis.zremrangebyscore(key, min, max);
+    },
+    async zcard(key: string): Promise<number> {
+      return redis.zcard(key);
+    },
+    async zscore(key: string, member: string): Promise<number | null> {
+      return redis.zscore(key, member);
     },
   };
 }

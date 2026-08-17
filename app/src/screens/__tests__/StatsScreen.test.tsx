@@ -57,6 +57,8 @@ describe('StatsScreen', () => {
     const failingClient: WorldPeaceApiClient = {
       increment: jest.fn().mockRejectedValue(new Error('network down')),
       getStats: jest.fn(),
+      startPresence: jest.fn().mockResolvedValue(0),
+      endPresence: jest.fn().mockResolvedValue(0),
     };
     const dispatch = jest.fn();
 

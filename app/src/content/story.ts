@@ -21,6 +21,20 @@ export const narrative = {
 
   sessionCompanionLine: "Breathe gently. The world breathes with you.",
 
+  /** The session screen's companion line. Only claims company when there
+   * genuinely is some: `others` comes from live presence, and is null while
+   * unknown (offline, or the request failed). Sitting alone is framed as
+   * holding the space open, not as a shortfall. */
+  sessionPresence: (others: number | null): string => {
+    if (others == null || others === 0) {
+      return 'Breathe gently. You are holding the space right now.';
+    }
+    if (others === 1) {
+      return 'Breathe gently. One other person is meditating alongside you right now.';
+    }
+    return `Breathe gently. ${others} others are meditating alongside you right now.`;
+  },
+
   statsFactCard:
     'For fifty years, researchers have tracked something remarkable: when groups meditate together on one intention, measurable shifts occur in the surrounding world. You are part of this documented lineage.',
 

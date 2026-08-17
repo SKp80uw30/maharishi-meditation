@@ -1,15 +1,22 @@
-import express from 'express';
-import { createIncrementHandler, createStatsHandler } from './handlers';
-import { getWorldPeaceStore } from './redisClient';
+import express, { NextFunction, Request, Response } from 'express';
+import {
+  createIncrementHandler,
+  createPresenceJoinHandler,
+  createPresenceLeaveHandler,
+  createStatsHandler,
+} from './handlers';
+import { getStores } from './redisClient';
 
 const app = express();
 const port = process.env.PORT || 3000;
+
+app.use(express.json({ limit: '4kb' }));
 
 // The API is anonymous and public by design (no credentials, no cookies, no
 // user data), so a wildcard origin is safe. Required by the react-native-web
 // build, which calls this API cross-origin from the browser — without it every
 // browser request fails at the preflight.
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -20,64 +27,75 @@ app.use((req, res, next) => {
   next();
 });
 
-let store: ReturnType<typeof getWorldPeaceStore> | null = null;
+let stores: ReturnType<typeof getStores> | null = null;
 let storeError: Error | null = null;
 
-// Lazy initialization of Redis store
-function initStore() {
-  if (store || storeError) return;
-
+// Lazy initialization: a Redis misconfiguration degrades the affected routes
+// rather than crashing the process on boot.
+function initStores() {
+  if (stores || storeError) return;
   try {
-    store = getWorldPeaceStore();
+    stores = getStores();
   } catch (err) {
     storeError = err as Error;
   }
 }
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+/** Wraps a handler factory so each route shares the same lazy-init, 503-on-
+ * misconfiguration, never-throw behaviour. */
+function route(
+  build: (s: NonNullable<typeof stores>) => (event: {
+    httpMethod: string;
+    body?: unknown;
+    query?: Record<string, string | undefined>;
+  }) => Promise<{ statusCode: number; headers: Record<string, string>; body: string }>,
+) {
+  return async (req: Request, res: Response) => {
+    try {
+      initStores();
+      if (!stores) {
+        res.status(503).json({ error: storeError?.message || 'Redis not configured' });
+        return;
+      }
+      const result = await build(stores)({
+        httpMethod: req.method,
+        body: req.body,
+        query: req.query as Record<string, string | undefined>,
+      });
+      res.status(result.statusCode).set(result.headers).send(result.body);
+    } catch {
+      res.status(500).json({ error: 'Internal error' });
+    }
+  };
+}
+
+app.get('/health', (req: Request, res: Response) => {
   if (storeError) {
-    return res.status(503).json({ status: 'degraded', error: storeError.message });
+    res.status(503).json({ status: 'degraded', error: storeError.message });
+    return;
   }
   res.json({ status: 'ok' });
 });
 
-// World Peace meditation increment endpoint
-app.post('/meditations/world-peace', async (req, res) => {
-  try {
-    initStore();
-    if (!store) {
-      return res.status(503).json({ error: storeError?.message || 'Redis not configured' });
-    }
+// Completion counter — fires once, when a session reaches the Stats screen.
+app.post('/meditations/world-peace', route((s) => createIncrementHandler(s.worldPeace)));
 
-    const incrementHandler = createIncrementHandler(store);
-    const result = await incrementHandler({ httpMethod: 'POST' } as any);
-    res.status(result.statusCode).send(result.body);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal error' });
-  }
-});
+// Totals + live presence. `?exclude=<session_id>` omits the caller's own
+// session so the client can honestly say "others".
+app.get('/stats/world-peace', route((s) => createStatsHandler(s.worldPeace, s.presence)));
 
-// World Peace stats endpoint
-app.get('/stats/world-peace', async (req, res) => {
-  try {
-    initStore();
-    if (!store) {
-      return res.status(503).json({ error: storeError?.message || 'Redis not configured' });
-    }
-
-    const statsHandler = createStatsHandler(store);
-    const result = await statsHandler({ httpMethod: 'GET' } as any);
-    res.status(result.statusCode).send(result.body);
-  } catch (error) {
-    res.status(500).json({ error: 'Internal error' });
-  }
-});
+// Live presence. Start and heartbeat are the same operation: both push the
+// entry's expiry out. Timed sessions declare their length up front and so need
+// no heartbeat at all; open-ended ones refresh periodically.
+app.post('/presence/start', route((s) => createPresenceJoinHandler(s.presence)));
+app.post('/presence/heartbeat', route((s) => createPresenceJoinHandler(s.presence)));
+app.post('/presence/end', route((s) => createPresenceLeaveHandler(s.presence)));
 
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
   console.log(`POST  /meditations/world-peace — increment counter`);
-  console.log(`GET   /stats/world-peace — read stats`);
+  console.log(`GET   /stats/world-peace — totals + live presence`);
+  console.log(`POST  /presence/start | /presence/heartbeat | /presence/end`);
   console.log(`GET   /health — health check`);
   console.log(``);
   console.log(`Redis URL: ${process.env.REDIS_URL ? '✓ configured' : '✗ not configured'}`);

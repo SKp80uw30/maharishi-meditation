@@ -4,6 +4,8 @@ import { AppAction, AppState } from '../state/appReducer';
 import { Button, ProgressRing, ScreenContainer } from '../components';
 import { useSessionTimer, formatClock } from '../hooks/useSessionTimer';
 import { useAmbientLoop } from '../hooks/useAmbientLoop';
+import { usePresence } from '../hooks/usePresence';
+import { WorldPeaceApiClient, worldPeaceApi } from '../api/worldPeace';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
 import { radius, space } from '../theme/spacing';
@@ -15,9 +17,12 @@ import { narrative } from '../content/story';
 export default function SessionScreen({
   state,
   dispatch,
+  apiClient = worldPeaceApi,
 }: {
   state: AppState;
   dispatch: Dispatch<AppAction>;
+  /** Injectable for tests; defaults to the app's real client. */
+  apiClient?: WorldPeaceApiClient;
 }) {
   const duration = state.duration ?? 'open'; // guarded upstream by the reducer's START_SESSION check
   const isOpen = duration === 'open';
@@ -28,6 +33,10 @@ export default function SessionScreen({
   });
 
   useAmbientLoop(state.soundOn);
+
+  // Declares this session live for as long as the screen is mounted, and tells
+  // us how many others are meditating at the same moment.
+  const others = usePresence(duration, apiClient);
 
   return (
     <ScreenContainer variant="dark" wash="duskGlow" style={styles.container} testID="screen-session">
@@ -40,7 +49,7 @@ export default function SessionScreen({
 
       <View style={styles.textBlock}>
         <Text style={styles.supporting}>
-          Breathe gently. Others are meditating alongside you right now.
+          {narrative.sessionPresence(others)}
           {state.soundOn ? ' A gentle ambient tone plays as you go.' : ''}
         </Text>
         <Text style={styles.narrativeCompanion}>{narrative.sessionCompanionLine}</Text>

@@ -1,14 +1,16 @@
 import { createRedisWorldPeaceStore, dayKey, RedisClient } from '../worldPeaceStore';
 
-// The store's own command surface — typed against the exported interface so
-// this double can't drift from the real client the way it did when
-// sadd/scard were added.
+// Typed against the exported interface so this double can't drift from the real
+// client the way it did when the store started needing new commands.
 function fakeRedis(overrides: Partial<RedisClient> = {}): RedisClient {
   return {
     incr: jest.fn().mockResolvedValue(0),
     mget: jest.fn().mockResolvedValue([null, null]),
-    sadd: jest.fn().mockResolvedValue(1),
-    scard: jest.fn().mockResolvedValue(0),
+    zadd: jest.fn().mockResolvedValue(1),
+    zrem: jest.fn().mockResolvedValue(1),
+    zremrangebyscore: jest.fn().mockResolvedValue(0),
+    zcard: jest.fn().mockResolvedValue(0),
+    zscore: jest.fn().mockResolvedValue(null),
     ...overrides,
   };
 }
@@ -23,49 +25,40 @@ describe('dayKey', () => {
 describe('createRedisWorldPeaceStore', () => {
   it('increment() bumps both the day bucket and the all-time counter, and returns the new totals', async () => {
     const incr = jest.fn().mockResolvedValueOnce(43).mockResolvedValueOnce(1205000);
-    const redis = fakeRedis({ incr, scard: jest.fn().mockResolvedValue(7) });
+    const store = createRedisWorldPeaceStore(fakeRedis({ incr }));
 
-    const store = createRedisWorldPeaceStore(redis);
     const result = await store.increment();
 
-    expect(result).toEqual({ total_today: 43, total_all_time: 1205000, current_active_estimate: 7 });
+    expect(result).toEqual({ total_today: 43, total_all_time: 1205000 });
     expect(incr).toHaveBeenCalledTimes(2);
     expect(incr).toHaveBeenNthCalledWith(1, dayKey());
     expect(incr).toHaveBeenNthCalledWith(2, 'wp:total:all');
   });
 
-  it('increment() records an active session with an expiry so the count self-drains', async () => {
-    const sadd = jest.fn().mockResolvedValue(1);
-    const store = createRedisWorldPeaceStore(fakeRedis({ sadd }));
+  it('does not touch live presence — completions and presence are separate concerns', async () => {
+    const redis = fakeRedis();
+    const store = createRedisWorldPeaceStore(redis);
 
     await store.increment();
+    await store.getStats();
 
-    expect(sadd).toHaveBeenCalledTimes(1);
-    const [key, member, expiry] = sadd.mock.calls[0];
-    expect(key).toBe('wp:active:sessions');
-    expect(typeof member).toBe('string');
-    expect(expiry).toBe(1800);
+    // The old implementation wrote an active-session member here, which is why
+    // the "active" count could only ever describe people who had finished.
+    expect(redis.zadd).not.toHaveBeenCalled();
+    expect(redis.zcard).not.toHaveBeenCalled();
   });
 
-  it('getStats() reads both keys via mget and reports the active count', async () => {
+  it('getStats() reads both keys via mget', async () => {
     const mget = jest.fn().mockResolvedValue([42, 1204996]);
-    const redis = fakeRedis({ mget, scard: jest.fn().mockResolvedValue(3) });
+    const store = createRedisWorldPeaceStore(fakeRedis({ mget }));
 
-    const store = createRedisWorldPeaceStore(redis);
-    const result = await store.getStats();
-
-    expect(result).toEqual({ total_today: 42, total_all_time: 1204996, current_active_estimate: 3 });
+    expect(await store.getStats()).toEqual({ total_today: 42, total_all_time: 1204996 });
     expect(mget).toHaveBeenCalledWith(dayKey(), 'wp:total:all');
   });
 
   it('getStats() treats a brand-new day (no key yet) as 0, not an error', async () => {
-    const redis = fakeRedis({ mget: jest.fn().mockResolvedValue([null, null]) });
+    const store = createRedisWorldPeaceStore(fakeRedis({ mget: jest.fn().mockResolvedValue([null, null]) }));
 
-    const store = createRedisWorldPeaceStore(redis);
-    expect(await store.getStats()).toEqual({
-      total_today: 0,
-      total_all_time: 0,
-      current_active_estimate: 0,
-    });
+    expect(await store.getStats()).toEqual({ total_today: 0, total_all_time: 0 });
   });
 });
