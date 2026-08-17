@@ -184,6 +184,33 @@ Split across two layers — deliberately, not everything lives in the global red
   current_active_estimate? }`.
 - No user ID, email, device identity, profile data, or location data in any request.
 
+## Deployment — ⚠️ two unrelated git histories
+
+**`master` (local) and `origin/main` (deployed) have NO common ancestor.** They
+are separate lineages of the same project, not branches that diverged:
+
+- **`master`** — the phase-by-phase build this file and `TODO.md` describe
+  (Phases 0–14). It is where all app/ work happens. **Not deployed anywhere.**
+- **`origin/main`** — a squashed snapshot of the project pushed to GitHub, plus
+  Railway-specific commits made outside this lineage: `railway.json`, a root
+  `package.json` wrapper (`build` → `cd backend && npm install && npm run build`,
+  `start` → `cd backend && npm start`), a Redis client supporting **both**
+  Railway's `redis://` (via the `redis` package) and Upstash REST, and the
+  active-meditator (`sadd`/`scard`) feature.
+
+**Railway auto-deploys from `origin/main`.** Backend changes must land there.
+Never `git push --force master:main` — master's backend is the older, weaker
+lineage (its `redisClient.ts` only speaks Upstash REST, which cannot talk to the
+project's Railway Redis; deploying it would take the API down).
+
+Reconciling the two is an open decision — see `TODO.md` Phase 15.
+
+**Railway CLI**: `railway link --project 5d79b1d5-b9b6-465c-86ce-4c6fe5b4cbb8
+--environment production`, then `railway status --json` for deploy state and
+`railway variables --service maharishi-meditation` for env. (No Railway MCP is
+configured — CLI only.) The app service's Redis comes from `REDIS_URL`, injected
+by the project's own Redis service; there are no Upstash credentials set.
+
 ## Device testing
 
 **Expo Go does not currently work on Steve's iPhone 13** — Expo Go builds are

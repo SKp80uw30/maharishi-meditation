@@ -383,6 +383,43 @@ move on. Don't check a box without actually running its gate.
     - Reduced-motion testing: confirm animations are disabled when
       `AccessibilityInfo.isReduceMotionEnabled()` is true (can mock in Jest)
 
+- [ ] **Phase 15 — Reconcile the two git histories** ⚠️ **decide before more backend work**
+  - Discovered 2026-08-18 while deploying: `master` (this local lineage, Phases
+    0–14) and `origin/main` (what Railway deploys) have **no common ancestor**.
+    See CLAUDE.md "Deployment" for the full shape of the split.
+  - `origin/main` holds backend work master never had — dual Railway/Upstash
+    Redis support, the active-meditator feature, `railway.json` + the root
+    `package.json` build wrapper. `master` holds all the app/ work (Phases 3–14)
+    that `main` never had. Neither is a superset.
+  - Backend fixes therefore had to be made *on the main lineage* rather than
+    pushed from master (branch `railway-cors`, merged to `main` as `d4d8cba`).
+    That's sustainable for one-off backend fixes and unsustainable as a habit —
+    the app-side story work on master has no deploy path to `main` at all.
+  - **Options:** (a) graft master's `app/` onto main and make main canonical;
+    (b) port main's backend + Railway config onto master and repoint Railway at
+    a new branch; (c) split into two repos (app / backend), each with one
+    history. Needs a human call — it decides which lineage's history survives.
+
+- [x] **Backend deployed with CORS + build fix (2026-08-18)**
+  - The Railway build had been **failing on every deploy** since "Add live
+    'current meditators' count" — `redisClient.ts` kept a private `RedisLike`
+    interface (incr/mget) while the store moved to needing `sadd`/`scard`, so
+    the adapters no longer type-checked. Production had been frozen on an older
+    image the whole time, which is why the live API returned no
+    `current_active_estimate`. Fixed by exporting the store's `RedisClient` as
+    the single source of truth; also repaired the store's test double, which had
+    the same drift (3 failing tests → 11/11 green).
+  - Added the CORS middleware the web build needs (anonymous API, no cookies or
+    credentials, so `*` is safe).
+  - Deployed `d4d8cba` to Railway — **first successful build since the
+    regression**. Verified live: `/health` 200 with CORS headers, OPTIONS
+    preflight 204, `/stats/world-peace` now returning `current_active_estimate`,
+    and a full web click-through with **zero console/page errors**.
+  - Follow-on app fix (`1ae20dd`): with the feature finally live, the API
+    returns a real `0` instead of omitting the field, so "0 meditators" appeared
+    next to copy claiming others were meditating. Zero now hides the count like
+    an absent field does.
+
 - [ ] **Phase 13 — (stretch, optional) Build readiness**
   - App icon/splash assets, `app.json` metadata, EAS build config for real-device
     testing beyond Expo Go
