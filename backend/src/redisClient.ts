@@ -43,16 +43,21 @@ function createOfficialRedisClient(redisUrl: string): RedisLike {
   const redis = require('redis');
   const client = redis.createClient({ url: redisUrl });
 
-  let connected = false;
-  client.on('connect', () => {
-    connected = true;
-  });
-
-  // Connection happens lazily on first command
-  const ensure = async () => {
-    if (!connected) {
-      await client.connect();
+  // Connection happens lazily on first command. Memoise the *promise*, not a
+  // boolean: two commands issued concurrently (the stats route fetches counters
+  // and presence together) would both see a not-yet-connected flag and both
+  // call connect(), and the second call throws. Every caller now awaits the
+  // same connect. A failed connect is cleared so the next command can retry
+  // rather than latching the process into a broken state.
+  let connecting: Promise<unknown> | null = null;
+  const ensure = () => {
+    if (!connecting) {
+      connecting = client.connect().catch((err: unknown) => {
+        connecting = null;
+        throw err;
+      });
     }
+    return connecting;
   };
 
   return {
