@@ -448,6 +448,20 @@ move on. Don't check a box without actually running its gate.
     with two simultaneous browser sessions: alone → "You are holding the space",
     second joins → "One other person is meditating alongside you right now",
     and the count drops when one leaves.
+  - ✅ **CONFIRMED WORKING BY STEVE (2026-08-18)** — accepted after hands-on
+    testing across two browsers: starting a session in one made the other's
+    live count rise, finishing made it fall, and both the live count and the
+    completion totals moved correctly and independently. The feature is done,
+    deployed, and verified in real use, not just by tests.
+  - **How to test this properly:** you need *two concurrent clients* (two
+    browsers, or phone + laptop). Solo, the live count is always 0 when you
+    look at it — you can't be on the Intention screen and meditating at the
+    same time. That's correct behaviour, not a bug, and it's the single most
+    confusing thing about verifying presence by hand.
+  - **Which number moves when** (traced against the live API):
+    live presence rises on *start* and returns to 0 on *finish*;
+    `total_today` / `total_all_time` rise on *finish*. They are independent by
+    design — see CLAUDE.md "Presence vs. completions".
   - **Open:** the launch-event idea (a scheduled simultaneous meditation) cuts
     against the PRD's "not a scheduled/joined group session" framing. Worth a
     deliberate decision before building any countdown/join UI.
