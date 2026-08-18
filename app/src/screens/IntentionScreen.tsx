@@ -9,6 +9,7 @@ import { shadow } from '../theme/effects';
 import { worldPeaceApi, type WorldPeaceStats } from '../api/worldPeace';
 import { narrative } from '../content/story';
 import { useReducedMotion } from '../hooks/useReducedMotion';
+import { useFirstRunStory } from '../hooks/useFirstRunStory';
 
 // design_handoff_world_peace_mvp/components/IntentionScreen.jsx +
 // README "2. World Peace intention confirmation" — the emotional anchor of the
@@ -17,7 +18,9 @@ import { useReducedMotion } from '../hooks/useReducedMotion';
 export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAction> }) {
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [showStory, setShowStory] = useState(false);
+  // Both routes into the story live here: it opens itself on a first visit, and
+  // the "Go deeper" link below opens it on demand ever after.
+  const { isStoryOpen, openStory, closeStory } = useFirstRunStory();
   // null = the API gave no estimate (it's optional in the contract). Both that
   // and a real zero hide the count block: "0 meditators" would contradict the
   // supporting line right next to it, and zero is a routine reading since the
@@ -90,7 +93,7 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
               <Text style={styles.cardTitle}>World Peace & Non-violence</Text>
               <Text style={styles.cardBody}>{narrative.intentionSupportingLine}</Text>
               <Pressable
-                onPress={() => setShowStory(true)}
+                onPress={openStory}
                 style={styles.deepDiveLink}
                 accessible
                 accessibilityRole="link"
@@ -120,8 +123,8 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
 
       <Button label="Begin your session" onPress={() => dispatch({ type: 'CONTINUE' })} fullWidth style={styles.cta} />
 
-      {/* Story immersive onboarding */}
-      <StoryOnboarding isOpen={showStory} onClose={() => setShowStory(false)} />
+      {/* Story immersive onboarding: automatic on a first visit, on demand after */}
+      <StoryOnboarding isOpen={isStoryOpen} onClose={closeStory} />
     </ScreenContainer>
   );
 }

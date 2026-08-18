@@ -301,6 +301,9 @@ move on. Don't check a box without actually running its gate.
     "now it's you") reachable from Intention's "Go deeper" link. Kept it opt-in
     off the main ritual rather than gating first launch, consistent with the
     phasing note below.
+  - **Superseded 2026-08-19**: the story now also opens itself on a first visit
+    to Intention, and only then — Steve asked for both routes in. This is what
+    put the app's single persisted key on disk; see CLAUDE.md's state model.
   - **Fixed while completing it** (the work was left mid-flight and failing):
     - 11 failing tests across 3 suites. Root cause of 8 of them was
       `react-native-safe-area-context`: its real provider yields no insets under

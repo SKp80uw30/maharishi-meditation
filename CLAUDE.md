@@ -203,7 +203,16 @@ Split across two layers — deliberately, not everything lives in the global red
 - Stats payload (`total_today`, `total_all_time`, optional `current_active_estimate`):
   fetched/updated only on the Stats screen, via the API client
   (`app/src/api/worldPeace.ts`).
-- No persisted client store, no auth state, no user identifiers anywhere.
+- **Exactly one thing is persisted on device**, and it is a boolean:
+  `maharishi.story.seen` in AsyncStorage, via `app/src/storage/storyProgress.ts`.
+  It exists so the story onboarding can open itself once, on a first visit to
+  Intention, and never again (`app/src/hooks/useFirstRunStory.ts` owns both that
+  automatic route and the "Go deeper" manual one). Reads fail *closed* — a
+  storage error resolves `true`, because the cost of guessing wrong that way is
+  a missed auto-open the person can still reach from "Go deeper", while guessing
+  the other way reopens the story on every launch forever. Keep this the only
+  key: no auth state, no user identifiers, no history, nothing about the person
+  anywhere on disk.
 
 ## API contract (PRD "Backend architecture" / "Recommended MVP decision set")
 
