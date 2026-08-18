@@ -18,14 +18,18 @@ describe('RipplesAnimation', () => {
     }
   });
 
-  it('loops the ripple and pulse animations when reduce motion is off', async () => {
+  it('runs the ripple timeline and a pulse per source when reduce motion is off', async () => {
     jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
     const loopSpy = jest.spyOn(Animated, 'loop');
+    const timingSpy = jest.spyOn(Animated, 'timing');
 
     await render(<RipplesAnimation />);
 
-    // One master timeline for the ripples, plus a pulse per source.
-    await waitFor(() => expect(loopSpy).toHaveBeenCalledTimes(4));
+    // One looped pulse per source; the ripple timeline restarts itself instead.
+    await waitFor(() => expect(loopSpy).toHaveBeenCalledTimes(3));
+    expect(
+      timingSpy.mock.calls.some(([, config]) => config.duration === 9000),
+    ).toBe(true);
   });
 
   it('holds a still image instead of animating when the system reports reduce motion', async () => {

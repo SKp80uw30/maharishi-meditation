@@ -164,6 +164,14 @@ described under Testing below.
   directly in a component, and never create an `Animated.Value` inline in a render
   body (use `useRef`) — as a changing effect dependency it will re-fire the effect
   every render.
+- **`Animated.loop` only loops animations that end where they started.** A looped
+  `timing` that runs 0→1 plays once and then freezes: the value stays at 1 and
+  every later pass animates 1→1. Adding a zero-duration rewind leg to the
+  sequence doesn't help either. Ping-pong loops (`sequence([0→1, 1→0])`, as in
+  the ripple pulses) are fine; a sawtooth timeline must restart itself —
+  `.start(({finished}) => finished && run())` with a `setValue(0)` rewind, the
+  pattern in `BlobMark` and `RipplesAnimation`. Symptom is a visual that plays
+  one perfect cycle and then stops dead.
 - **Counts the API may not provide**: `current_active_estimate` is optional in the
   contract. When it's absent, hide the count and soften the copy — never render a
   literal "0 meditators" next to text claiming others are meditating.

@@ -37,7 +37,7 @@ const SEED_SCALE = 0.15;
  * travelling, so the field visibly fills rather than blinking once. Times are
  * fractions of the cycle: born at `birth`, full radius at `full`, gone by `end`. */
 const RIPPLES = [
-  { birth: 0.1, full: 0.58, end: 0.8, opacity: 0.5 },
+  { birth: 0.05, full: 0.58, end: 0.8, opacity: 0.5 },
   { birth: 0.28, full: 0.76, end: 0.9, opacity: 0.34 },
 ];
 
@@ -54,14 +54,25 @@ export default function RipplesAnimation() {
   useEffect(() => {
     if (!animate) return;
 
-    const waveLoop = Animated.loop(
+    let running = true;
+
+    // Self-restarting rather than Animated.loop: a looped timing that ends on a
+    // value other than the one it started from never rewinds here — the timeline
+    // reaches 1 and every later pass animates 1→1, freezing the ripples after a
+    // single cycle. Rewinding by hand is the same pattern <BlobMark> uses, and
+    // the jump is invisible because everything has already faded out at 1.
+    const runWave = () => {
+      if (!running) return;
+      wave.setValue(0);
       Animated.timing(wave, {
         toValue: 1,
         duration: CYCLE_MS,
         easing: Easing.linear,
         useNativeDriver: true,
-      }),
-    );
+      }).start(({ finished }) => {
+        if (finished) runWave();
+      });
+    };
     const pulseLoops = pulses.map((value, index) =>
       Animated.loop(
         Animated.sequence([
@@ -81,11 +92,12 @@ export default function RipplesAnimation() {
       ),
     );
 
-    waveLoop.start();
+    runWave();
     pulseLoops.forEach((loop) => loop.start());
 
     return () => {
-      waveLoop.stop();
+      running = false;
+      wave.stopAnimation();
       pulseLoops.forEach((loop) => loop.stop());
       wave.setValue(0);
       pulses.forEach((value) => value.setValue(0));
