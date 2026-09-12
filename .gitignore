@@ -27,3 +27,6 @@ coverage/
 # Editor
 .vscode/
 backend/dist/
+
+# Local Netlify folder
+.netlify

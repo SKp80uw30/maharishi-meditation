@@ -55,7 +55,7 @@ export default function LaunchScreen({ dispatch }: { dispatch: Dispatch<AppActio
         <BlobMark size={120} glow breathing />
 
         <View style={styles.textBlock}>
-          <Text style={styles.title}>Maharishi Meditation</Text>
+          <Text style={styles.title}>One Field</Text>
           <Text style={styles.subtitle}>{narrative.launchSubtitle}</Text>
         </View>
 

@@ -1,4 +1,4 @@
-# Build tracker — Maharishi Meditation MVP
+# Build tracker — One Field MVP
 
 Read [`CLAUDE.md`](CLAUDE.md) first for architecture context. Work top to bottom.
 Each phase: implement → run its test gate → check the box below → `git commit` →

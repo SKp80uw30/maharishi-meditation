@@ -1,4 +1,4 @@
-// Narrative content module for Maharishi Meditation app
+// Narrative content module for One Field app
 // Source of truth for all story copy: one-liners for each screen,
 // full origin narrative, experiment timeline, visual metaphors.
 // Updated via Phase 14 implementation from agent-synthesized content.

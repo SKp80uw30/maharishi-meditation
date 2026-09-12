@@ -1,0 +1,12 @@
+[build]
+  base = "app"
+  command = "npx expo export --platform web --output-dir dist"
+  publish = "dist"
+
+[build.environment]
+  EXPO_PUBLIC_API_URL = "https://maharishi-meditation-production.up.railway.app"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

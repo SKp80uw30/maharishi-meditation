@@ -7,7 +7,7 @@ describe('LaunchScreen', () => {
     const dispatch = jest.fn();
     await render(<LaunchScreen dispatch={dispatch} />);
 
-    expect(screen.getByText('Maharishi Meditation')).toBeTruthy();
+    expect(screen.getByText('One Field')).toBeTruthy();
     expect(screen.getByText('A shared breath. Fifty years of proof.')).toBeTruthy();
 
     await fireEvent.press(screen.getByRole('button', { name: 'Begin' }));
