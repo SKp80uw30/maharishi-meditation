@@ -29,6 +29,12 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
   // they'd stay at scale 0 and the cards would look empty.
   const [statsSettled, setStatsSettled] = useState(false);
   const [showStory, setShowStory] = useState(false);
+  const [showHeart, setShowHeart] = useState(false);
+  // Picked once per arrival at Stats, not per re-render, so the line doesn't
+  // shuffle under the person while they're reading it.
+  const afterglowQuote = useRef(
+    narrative.afterglowQuotes[Math.floor(Math.random() * narrative.afterglowQuotes.length)]
+  ).current;
   const scaleAnim = useRef(new Animated.Value(0)).current;
   const reducedMotion = useReducedMotion();
 
@@ -102,6 +108,20 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
             <Text style={styles.factLinkText}>Read the full story →</Text>
           </Pressable>
         </Card>
+
+        {/* Heart card — the why, sitting alongside the fact card's evidence */}
+        <Card style={styles.heartCard}>
+          <Text style={styles.heartText}>{afterglowQuote}</Text>
+          <Pressable
+            onPress={() => setShowHeart(true)}
+            style={styles.factLink}
+            accessible
+            accessibilityRole="link"
+            accessibilityLabel="Read our why"
+          >
+            <Text style={styles.factLinkText}>Read our why →</Text>
+          </Pressable>
+        </Card>
       </ScrollView>
 
       <View style={styles.buttonGroup}>
@@ -117,6 +137,15 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
             <Text style={styles.timelineHeading}>Timeline of Research</Text>
           </View>
           <StoryTimeline entries={narrative.timeline} />
+        </ScrollView>
+      </Sheet>
+
+      {/* Heart/mission deep-dive modal — why the app exists, separate from the
+       * origin-story Sheet above so re-visiting the science doesn't stand in
+       * for hearing the why. */}
+      <Sheet isOpen={showHeart} onClose={() => setShowHeart(false)} title="Our Why">
+        <ScrollView showsVerticalScrollIndicator>
+          <Text style={styles.storyText}>{narrative.heartMessage}</Text>
         </ScrollView>
       </Sheet>
     </ScreenContainer>
@@ -221,6 +250,19 @@ const styles = StyleSheet.create({
     fontSize: fontSize.bodyS,
     color: colors.textLink,
     textDecorationLine: 'underline',
+  },
+  heartCard: {
+    width: '100%',
+    backgroundColor: colors.surfaceSunken,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.brandPrimary,
+  },
+  heartText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.textSecondary,
+    lineHeight: leading(1.5, fontSize.bodyS),
+    marginBottom: space[3],
   },
   storyText: {
     fontFamily: fontFamily.regular,

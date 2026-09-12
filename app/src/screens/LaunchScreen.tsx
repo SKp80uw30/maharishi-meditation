@@ -16,11 +16,13 @@ import { narrative } from '../content/story';
 // The origin story's opening beat (1973, Washington DC) is the main copy here,
 // every launch — not a one-time onboarding fact. The point is repetition: a
 // daily reminder of why this practice exists, not a story told once and then
-// assumed remembered. Two CTAs, not one: "Tell me more" opens the full 5-beat
-// StoryOnboarding for anyone who wants the deeper account; "Skip story and get
-// started" begins immediately for anyone who already knows it. Neither is the
-// "real" path — the one-line hook already stands on its own, these are just
-// two ways to leave it.
+// assumed remembered. Two ways onward, not one: "Tell me more" opens the full
+// 5-beat StoryOnboarding for anyone who wants the deeper account; "Skip story
+// and get started" begins immediately for anyone who already knows it. Both
+// lead past Launch equally — the one-line hook above already stands on its
+// own — so "Tell me more" carries the pill styling only because reading on is
+// the more inviting default, while skipping is styled as a quiet text link so
+// it reads as the lesser option, not a second competing CTA.
 export default function LaunchScreen({ dispatch }: { dispatch: Dispatch<AppAction> }) {
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(16)).current;
@@ -73,11 +75,19 @@ export default function LaunchScreen({ dispatch }: { dispatch: Dispatch<AppActio
         <View style={styles.ctaBlock}>
           <Text style={styles.ctaCaption}>{narrative.launchCtaCaption}</Text>
           <Button label="Tell me more" onPress={() => setIsStoryOpen(true)} />
-          <Button
-            label="Skip story and get started"
-            variant="secondary"
+          {/* A text link, not a second pill: with "Tell me more" already the
+           * coral primary action, an equally-sized secondary button — made
+           * even wider by its longer label — competed with it rather than
+           * reading as the lesser option. */}
+          <Pressable
             onPress={() => dispatch({ type: 'BEGIN' })}
-          />
+            style={styles.skipLink}
+            accessibilityRole="link"
+            accessibilityLabel="Skip story and get started"
+            hitSlop={8}
+          >
+            <Text style={styles.skipLinkText}>Skip story and get started</Text>
+          </Pressable>
         </View>
       </Animated.View>
 
@@ -154,6 +164,17 @@ const styles = StyleSheet.create({
     fontSize: fontSize.caption,
     color: colors.textTertiary,
     maxWidth: 240,
+    textAlign: 'center',
+  },
+  skipLink: {
+    paddingVertical: space[2],
+    paddingHorizontal: space[4],
+  },
+  skipLinkText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.textLink,
+    textDecorationLine: 'underline',
     textAlign: 'center',
   },
 });

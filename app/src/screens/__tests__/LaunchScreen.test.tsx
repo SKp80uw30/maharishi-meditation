@@ -20,7 +20,7 @@ describe('LaunchScreen', () => {
       )
     ).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Tell me more' })).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'Skip story and get started' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Skip story and get started' })).toBeTruthy();
   });
 
   it('dispatches BEGIN when "Skip story and get started" is tapped, with no story shown', async () => {
@@ -29,7 +29,7 @@ describe('LaunchScreen', () => {
 
     expect(screen.queryByTestId('story-onboarding')).toBeNull();
 
-    await fireEvent.press(screen.getByRole('button', { name: 'Skip story and get started' }));
+    await fireEvent.press(screen.getByRole('link', { name: 'Skip story and get started' }));
 
     expect(dispatch).toHaveBeenCalledWith({ type: 'BEGIN' });
     expect(screen.queryByTestId('story-onboarding')).toBeNull();

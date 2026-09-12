@@ -58,6 +58,33 @@ export const narrative = {
   statsFactCard:
     'For fifty years, researchers have tracked something remarkable: when groups meditate together on one intention, measurable shifts occur in the surrounding world. You are part of this documented lineage.',
 
+  /** The heart-centered companion to statsFactCard — the science card speaks in
+   * evidence, this one speaks in why. Surfaced via its own "Read our why →" link
+   * on Stats, deliberately not folded into the origin-story Sheet: re-showing
+   * the onboarding story after a session undersells the moment, since the
+   * person just personally extended the field rather than merely learning
+   * about it. Kept short enough to read in the few seconds right after a
+   * session ends. */
+  heartMessage:
+    "You just made the field a little stronger. Not metaphorically — for the last few minutes, you added your attention to something other people are quietly building too, one session at a time. That's what we're actually here for. It's why this app will never carry ads, never ask for a subscription, never sell what you do here. We're not trying to capture your attention; we're trying to grow this field, on purpose, toward one thing. Fifty years of research says something measurable happens when enough people do this together, and we take that seriously — but we didn't wait for it, and we won't wait for the argument to finish. Some things the heart already knows.",
+
+  /** Short rotating lines shown on Stats as the teaser for heartMessage — one
+   * picked at random per arrival (see StatsScreen), so the ritual doesn't say
+   * the exact same thing every time a person finishes. Each carries at least
+   * one of: the field-growing idea, the no-ads-ever commitment, or the
+   * heart-knows-before-science-catches-up idea. */
+  afterglowQuotes: [
+    "You just made the field a little stronger. That part isn't up for debate.",
+    'No ads ran while you sat there. That\'s not an accident — it\'s the whole point.',
+    'This app will never have a subscription. Growing this matters more to us than growing revenue.',
+    "Somewhere, someone else just finished too. The field doesn't need you to have done this alone.",
+    "Scientists can argue about this one for another fifty years. We'll just keep meditating.",
+    "Your heart didn't need a study to know that helped. Neither did ours.",
+    "We could sell what you do here. We'd rather grow a field instead. Easy trade.",
+    'Fifty years of research points one way. Your heart got there first.',
+    'No ads, no subscription, no catch — just one field, a little bigger because of you.',
+  ],
+
   /** Thank-you line for the Stats screen. Timed sessions name the minutes;
    * open-ended sessions thank presence itself. */
   statsThankYou: (minutes: number | null): string =>
