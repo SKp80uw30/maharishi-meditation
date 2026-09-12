@@ -13,7 +13,7 @@ export default function StoryBeat3() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.headline}>Fifty Years of Proof</Text>
+        <Text style={styles.headline}>50 Years Growing the Field</Text>
         <Text style={styles.subtitle}>Key research milestones from 1973 to now</Text>
       </View>
 

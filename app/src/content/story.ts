@@ -128,11 +128,11 @@ export const narrative = {
         'Meta-analyses across dozens of peer-reviewed studies showed consistent results: larger groups created larger effects. The pattern was undeniable. Mainstream science remained skeptical—but the data spoke for itself.',
     },
     {
-      year: 2024,
+      year: 2026,
       location: 'In Your Hands',
       headline: 'The Field Becomes Digital',
       description:
-        'This app connects thousands of individual meditators across time zones into one shared intention. You are not joining a scheduled group call—you are joining a documented phenomenon that has been studied for fifty years. Your practice is counted. Your presence matters.',
+        'This app connects individual meditators across time zones into one shared intention. You are not joining a scheduled group call—you are joining a documented phenomenon that has been studied for fifty years. Your practice is counted. Your presence matters.',
     },
   ] as ExperimentEntry[],
 
