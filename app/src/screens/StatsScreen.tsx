@@ -1,7 +1,7 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
 import { AppAction, AppState } from '../state/appReducer';
-import { BlobMark, Button, Card, ScreenContainer, Sheet, StoryTimeline } from '../components';
+import { BlobMark, Button, Card, ScreenContainer, Sheet } from '../components';
 import { WorldPeaceApiClient, WorldPeaceStats, worldPeaceApi } from '../api/worldPeace';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
@@ -28,7 +28,6 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
   // scale-in below must also run for the "—" placeholders on failure, or
   // they'd stay at scale 0 and the cards would look empty.
   const [statsSettled, setStatsSettled] = useState(false);
-  const [showStory, setShowStory] = useState(false);
   const [showHeart, setShowHeart] = useState(false);
   // Picked once per arrival at Stats, not per re-render, so the line doesn't
   // shuffle under the person while they're reading it.
@@ -95,21 +94,10 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
           <StatRow label="All time" value={stats?.total_all_time} valueColor={colors.textPrimary} scaleAnim={scaleAnim} />
         </View>
 
-        {/* Fact card with deep-dive link */}
-        <Card style={styles.factCard}>
-          <Text style={styles.factText}>{narrative.statsFactCard}</Text>
-          <Pressable
-            onPress={() => setShowStory(true)}
-            style={styles.factLink}
-            accessible
-            accessibilityRole="link"
-            accessibilityLabel="Read the full story"
-          >
-            <Text style={styles.factLinkText}>Read the full story →</Text>
-          </Pressable>
-        </Card>
-
-        {/* Heart card — the why, sitting alongside the fact card's evidence */}
+        {/* Heart card — the why. The onboarding origin-story card that used to
+         * sit here was removed: it just repeated the Launch-screen story
+         * right after the person had personally lived it, which undersold
+         * the moment rather than honoring it. */}
         <Card style={styles.heartCard}>
           <Text style={styles.heartText}>{afterglowQuote}</Text>
           <Pressable
@@ -129,20 +117,7 @@ export default function StatsScreen({ state, dispatch, apiClient = worldPeaceApi
         <Button label="Home" onPress={() => dispatch({ type: 'HOME' })} variant="secondary" fullWidth />
       </View>
 
-      {/* Story deep-dive modal */}
-      <Sheet isOpen={showStory} onClose={() => setShowStory(false)} title="The Story">
-        <ScrollView showsVerticalScrollIndicator>
-          <Text style={styles.storyText}>{narrative.originStory}</Text>
-          <View style={{ height: space[8] }}>
-            <Text style={styles.timelineHeading}>Timeline of Research</Text>
-          </View>
-          <StoryTimeline entries={narrative.timeline} />
-        </ScrollView>
-      </Sheet>
-
-      {/* Heart/mission deep-dive modal — why the app exists, separate from the
-       * origin-story Sheet above so re-visiting the science doesn't stand in
-       * for hearing the why. */}
+      {/* Heart/mission deep-dive modal — why the app exists */}
       <Sheet isOpen={showHeart} onClose={() => setShowHeart(false)} title="Our Why">
         <ScrollView showsVerticalScrollIndicator>
           <Text style={styles.storyText}>{narrative.heartMessage}</Text>
@@ -229,19 +204,6 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.extrabold,
     fontSize: fontSize.headingM,
   },
-  factCard: {
-    width: '100%',
-    backgroundColor: colors.surfaceSunken,
-    borderLeftWidth: 3,
-    borderLeftColor: colors.brandSecondary,
-  },
-  factText: {
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.bodyS,
-    color: colors.textSecondary,
-    lineHeight: leading(1.5, fontSize.bodyS),
-    marginBottom: space[3],
-  },
   factLink: {
     marginTop: space[2],
   },
@@ -270,12 +232,6 @@ const styles = StyleSheet.create({
     color: colors.textPrimary,
     lineHeight: leading(1.6, fontSize.bodyM),
     marginBottom: space[6],
-  },
-  timelineHeading: {
-    fontFamily: fontFamily.bold,
-    fontSize: fontSize.headingM,
-    color: colors.textPrimary,
-    lineHeight: leading(1.3, fontSize.headingM),
   },
   buttonGroup: {
     paddingHorizontal: space[6] + space[1],

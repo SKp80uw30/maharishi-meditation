@@ -6,5 +6,4 @@ export { default as BlobMark } from './BlobMark';
 export { default as GradientWash } from './GradientWash';
 export { default as ProgressRing } from './ProgressRing';
 export { default as Sheet } from './Sheet';
-export { default as StoryTimeline } from './StoryTimeline';
 export { default as StoryOnboarding } from './StoryOnboarding/StoryOnboarding';

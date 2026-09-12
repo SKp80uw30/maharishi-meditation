@@ -1,6 +1,7 @@
 // Narrative content module for One Field app
 // Source of truth for all story copy: one-liners for each screen,
-// full origin narrative, experiment timeline, visual metaphors.
+// experiment timeline, visual metaphors. The full origin narrative lives in
+// StoryOnboarding's five beats (app/src/components/StoryOnboarding), not here.
 // Updated via Phase 14 implementation from agent-synthesized content.
 
 export interface ExperimentEntry {
@@ -55,24 +56,24 @@ export const narrative = {
     return `${others} others are meditating alongside you right now.`;
   },
 
-  statsFactCard:
-    'For fifty years, researchers have tracked something remarkable: when groups meditate together on one intention, measurable shifts occur in the surrounding world. You are part of this documented lineage.',
-
-  /** The heart-centered companion to statsFactCard — the science card speaks in
-   * evidence, this one speaks in why. Surfaced via its own "Read our why →" link
-   * on Stats, deliberately not folded into the origin-story Sheet: re-showing
-   * the onboarding story after a session undersells the moment, since the
-   * person just personally extended the field rather than merely learning
-   * about it. Kept short enough to read in the few seconds right after a
-   * session ends. */
+  /** The heart-centered card on Stats — replaced the old science fact card
+   * (which just re-quoted the Launch-screen 1973/Washington DC story right
+   * after the person had personally lived it, undersize-ing the moment
+   * instead of honoring it). Surfaced via its own "Read our why →" link.
+   * Covers why there are no ads/subscriptions, and — since the app's whole
+   * privacy stance (no accounts, no cookies, no personal data — see
+   * AboutScreen) is also part of "why", not just a policy footnote — makes
+   * that explicit here too: not knowing who someone is isn't an oversight,
+   * it's the same commitment as never selling their attention. Kept short
+   * enough to read in the few seconds right after a session ends. */
   heartMessage:
-    "You just made the field a little stronger. Not metaphorically — for the last few minutes, you added your attention to something other people are quietly building too, one session at a time. That's what we're actually here for. It's why this app will never carry ads, never ask for a subscription, never sell what you do here. We're not trying to capture your attention; we're trying to grow this field, on purpose, toward one thing. Fifty years of research says something measurable happens when enough people do this together, and we take that seriously — but we didn't wait for it, and we won't wait for the argument to finish. Some things the heart already knows.",
+    "You just made the field a little stronger. Not metaphorically — for the last few minutes, you added your attention to something other people are quietly building too, one session at a time. That's what we're actually here for. It's why this app will never carry ads, never ask for a subscription, never sell what you do here. There's no login, no account, no cookies — we don't track you individually, and we don't want to. This isn't a data business wearing a meditation app's clothes. We're not trying to capture your attention or harvest anything about you; we're trying to grow this field, on purpose, toward one thing. Fifty years of research says something measurable happens when enough people do this together, and we take that seriously — but we didn't wait for it, and we won't wait for the argument to finish. Some things the heart already knows.",
 
   /** Short rotating lines shown on Stats as the teaser for heartMessage — one
    * picked at random per arrival (see StatsScreen), so the ritual doesn't say
    * the exact same thing every time a person finishes. Each carries at least
-   * one of: the field-growing idea, the no-ads-ever commitment, or the
-   * heart-knows-before-science-catches-up idea. */
+   * one of: the field-growing idea, the no-ads-ever/no-tracking commitment, or
+   * the heart-knows-before-science-catches-up idea. */
   afterglowQuotes: [
     "You just made the field a little stronger. That part isn't up for debate.",
     'No ads ran while you sat there. That\'s not an accident — it\'s the whole point.',
@@ -83,6 +84,7 @@ export const narrative = {
     "We could sell what you do here. We'd rather grow a field instead. Easy trade.",
     'Fifty years of research points one way. Your heart got there first.',
     'No ads, no subscription, no catch — just one field, a little bigger because of you.',
+    "No login, no cookies, no idea who you are. That's not a bug — that's the whole deal.",
   ],
 
   /** Thank-you line for the Stats screen. Timed sessions name the minutes;
@@ -93,32 +95,6 @@ export const narrative = {
         ? `Thank you for your ${minutes} minutes of presence.`
         : 'Thank you for your presence.'
     } You joined others today in a practice that has shaped the world for fifty years.`,
-
-  // Full origin story (~400 words) for the deep-dive Sheet/Modal
-  // Opened with the human story, not the academic framing. Makes the phenomenon personal.
-  originStory: `
-In 1973, something unexpected happened in Washington DC.
-
-A group of 400 meditation practitioners gathered with a single intention: to meditate for peace. The researchers tracking the city weren't looking for miracles. They were collecting data—crime rates, accident rates, social disturbance indices. Just numbers.
-
-But the numbers shifted. Crime dropped 16%. When the group dispersed, the numbers rose again. When they gathered again, the numbers fell.
-
-The world noticed.
-
-For the next fifty years, researchers studied this pattern. They found it in Lebanon during the war. They found it in multiple American cities. They found it in Israel, in the Philippines, across cultures and decades. The pattern was consistent: when groups meditated together in coherent intention, something in the surrounding world seemed to shift.
-
-In the 1950s, Maharishi Mahesh Yogi brought Transcendental Meditation from ancient Vedic tradition to the modern world. His core teaching was simple: consciousness is the foundation of all existence. When one mind becomes coherent, something shifts. But what happens when many minds become coherent together?
-
-The researchers began to answer that question. They called the effect the Maharishi Effect—not named after mystical belief, but after decades of documented observation. The evidence is contested by mainstream science. Some researchers argue the studies have flaws. Others have replicated the findings. The phenomenon remains scientifically debated.
-
-But the pattern persists.
-
-This app exists to make that lineage visible. When you meditate for World Peace, you join thousands of others doing the same—not on a scheduled group call, but overlapping in time, each person holding their own intention within a shared field. You're not alone in a private practice. You're part of a documented, fifty-year experiment in collective consciousness.
-
-Each session you complete adds your presence to the field. The numbers you see are not abstract—they are evidence that your practice is real, counted, and part of something larger than yourself.
-
-The Maharishi Effect began with 400 people in one city. Today, it lives in an app. Your breath joins with thousands of others, across time zones and continents, all holding the same intention: World Peace. The research continues. And you are in it.
-  `.trim(),
 
   // Timeline of key experiments and milestones (5 entries, 1973–2024)
   // Presented from the human story first, then the research. Makes the phenomenon personal.
