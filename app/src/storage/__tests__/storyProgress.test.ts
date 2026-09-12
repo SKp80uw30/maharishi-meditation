@@ -20,7 +20,8 @@ describe('storyProgress', () => {
   it('reports seen when storage cannot be read at all', async () => {
     // Safari in private browsing refuses localStorage, which is the web build
     // this app is tested through. Failing closed keeps the story from reopening
-    // over the intention screen on every launch; "Go deeper" still reaches it.
+    // over the intention screen on every launch; Launch's "Tell me more" still
+    // reaches it.
     jest.spyOn(AsyncStorage, 'getItem').mockRejectedValue(new Error('denied'));
 
     await expect(hasSeenStory()).resolves.toBe(true);

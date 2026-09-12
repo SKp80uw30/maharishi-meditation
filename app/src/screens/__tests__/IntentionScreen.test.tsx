@@ -99,6 +99,18 @@ describe('IntentionScreen', () => {
     expect(dispatch).toHaveBeenCalledWith({ type: 'CONTINUE' });
   });
 
+  it('has no "Go deeper" link — the CTA lives inside the card instead', async () => {
+    const dispatch = jest.fn();
+    await render(
+      <SafeAreaProvider>
+        <IntentionScreen dispatch={dispatch} />
+      </SafeAreaProvider>
+    );
+
+    expect(screen.queryByText('Go deeper')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Begin your session' })).toBeTruthy();
+  });
+
   it('dispatches BACK when the back arrow is tapped', async () => {
     const dispatch = jest.fn();
     await render(
@@ -147,15 +159,5 @@ describe('IntentionScreen story onboarding', () => {
 
     expect(screen.queryByTestId('story-onboarding')).toBeNull();
     await waitFor(() => expect(hasSeenStory()).resolves.toBe(true));
-  });
-
-  it('still opens the story from "Go deeper" after it has been seen', async () => {
-    await markStorySeen();
-    await renderScreen();
-    expect(screen.queryByTestId('story-onboarding')).toBeNull();
-
-    await fireEvent.press(screen.getByLabelText('Read the full story'));
-
-    expect(screen.getByTestId('story-onboarding')).toBeTruthy();
   });
 });

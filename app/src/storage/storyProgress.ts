@@ -12,8 +12,9 @@ const STORY_SEEN_KEY = 'maharishi.story.seen';
  * Safari in private browsing refuses localStorage, which is exactly the web
  * build this gets tested through — and the two failure modes are not equal:
  * wrongly returning `true` costs a first-timer an automatic story they can
- * still open from "Go deeper", while wrongly returning `false` re-opens the
- * story over the intention screen on every single launch, forever. */
+ * still open from Launch's "Tell me more", while wrongly returning `false`
+ * re-opens the story over the intention screen on every single launch,
+ * forever. */
 export async function hasSeenStory(): Promise<boolean> {
   try {
     return (await AsyncStorage.getItem(STORY_SEEN_KEY)) != null;

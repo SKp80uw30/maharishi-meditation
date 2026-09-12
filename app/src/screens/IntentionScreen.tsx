@@ -1,15 +1,23 @@
 import React, { Dispatch, useEffect, useRef, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View, Animated } from 'react-native';
+import { ScrollView, StyleSheet, Text, View, Animated, useWindowDimensions } from 'react-native';
 import { AppAction } from '../state/appReducer';
 import { BackButton, Button, Card, ScreenContainer, StoryOnboarding } from '../components';
 import { colors } from '../theme/colors';
 import { fontFamily, fontSize, leading, tracking } from '../theme/typography';
 import { space } from '../theme/spacing';
-import { shadow } from '../theme/effects';
 import { worldPeaceApi, type WorldPeaceStats } from '../api/worldPeace';
 import { narrative } from '../content/story';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 import { useFirstRunStory } from '../hooks/useFirstRunStory';
+
+// Below this width the card stacks its text above the CTA (mobile default);
+// at or above it there's room to sit the CTA beside the text instead, so
+// the card is designed mobile-first and widens into a row.
+const WIDE_BREAKPOINT = 640;
+// Caps the card/headline column on wide viewports so a desktop browser
+// window doesn't stretch the card edge-to-edge into an unreadable line
+// length — the whole reason this screen felt sparse on desktop before.
+const CONTENT_MAX_WIDTH = 640;
 
 // design_handoff_world_peace_mvp/components/IntentionScreen.jsx +
 // README "2. World Peace intention confirmation" — the emotional anchor of the
@@ -18,9 +26,13 @@ import { useFirstRunStory } from '../hooks/useFirstRunStory';
 export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAction> }) {
   const [stats, setStats] = useState<WorldPeaceStats | null>(null);
   const [loading, setLoading] = useState(true);
-  // Both routes into the story live here: it opens itself on a first visit, and
-  // the "Go deeper" link below opens it on demand ever after.
-  const { isStoryOpen, openStory, closeStory } = useFirstRunStory();
+  // Only the automatic first-visit route remains here — the on-demand "Go
+  // deeper" link was removed from this card (it duplicated Launch's own
+  // permanent "Tell me more", which now shows the same origin hook on every
+  // launch, not just the first).
+  const { isStoryOpen, closeStory } = useFirstRunStory();
+  const { width } = useWindowDimensions();
+  const isWide = width >= WIDE_BREAKPOINT;
   // null = the API gave no estimate (it's optional in the contract). Both that
   // and a real zero hide the count block: "0 meditators" would contradict the
   // supporting line right next to it, and zero is a routine reading since the
@@ -81,49 +93,44 @@ export default function IntentionScreen({ dispatch }: { dispatch: Dispatch<AppAc
     <ScreenContainer style={styles.container} testID="screen-intention">
       <BackButton onPress={() => dispatch({ type: 'BACK' })} />
 
-      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator>
+      <ScrollView
+        contentContainerStyle={[styles.scrollContent, isWide && styles.scrollContentWide]}
+        showsVerticalScrollIndicator
+      >
         <Text style={styles.microLabel}>Today's intention</Text>
         <Text style={styles.headline}>
           What energy are you{'\n'}sending into the world today?
         </Text>
 
         <Card style={styles.card}>
-          <View style={styles.cardHeader}>
-            <View style={{ flex: 1 }}>
+          <View style={[styles.cardRow, isWide && styles.cardRowWide]}>
+            <View style={styles.cardText}>
               <Text style={styles.cardTitle}>World Peace & Non-violence</Text>
               <Text style={styles.cardBody}>{narrative.intentionSupportingLine}</Text>
-              <Pressable
-                onPress={openStory}
-                style={styles.deepDiveLink}
-                accessible
-                accessibilityRole="link"
-                accessibilityLabel="Read the full story"
-              >
-                <Text style={styles.deepDiveLinkText}>Go deeper →</Text>
-              </Pressable>
+              {displayCount != null && displayCount > 0 && (
+                <View style={styles.liveRow}>
+                  <Animated.Text
+                    style={[styles.liveNumber, { transform: [{ scale: scaleAnim }] }]}
+                  >
+                    {displayCount}
+                  </Animated.Text>
+                  <Text style={styles.liveLabel}>{activeText}</Text>
+                  <Text style={styles.liveCaption}> meditating right now</Text>
+                </View>
+              )}
             </View>
-            {displayCount != null && displayCount > 0 && (
-              <View style={styles.activeCount}>
-                <Animated.Text
-                  style={[
-                    styles.activeNumber,
-                    {
-                      transform: [{ scale: scaleAnim }],
-                    },
-                  ]}
-                >
-                  {displayCount}
-                </Animated.Text>
-                <Text style={styles.activeLabel}>{activeText}</Text>
-              </View>
-            )}
+            <Button
+              label="Begin your session"
+              onPress={() => dispatch({ type: 'CONTINUE' })}
+              fullWidth={!isWide}
+              style={isWide ? styles.ctaWide : styles.ctaNarrow}
+            />
           </View>
         </Card>
       </ScrollView>
 
-      <Button label="Begin your session" onPress={() => dispatch({ type: 'CONTINUE' })} fullWidth style={styles.cta} />
-
-      {/* Story immersive onboarding: automatic on a first visit, on demand after */}
+      {/* Story onboarding: automatic on a first visit only — the on-demand
+       * route now lives solely on Launch's "Tell me more". */}
       <StoryOnboarding isOpen={isStoryOpen} onClose={closeStory} />
     </ScreenContainer>
   );
@@ -140,6 +147,11 @@ const styles = StyleSheet.create({
     gap: space[5],
     paddingHorizontal: space[6] + space[1],
     paddingVertical: space[6],
+  },
+  scrollContentWide: {
+    maxWidth: CONTENT_MAX_WIDTH,
+    width: '100%',
+    alignSelf: 'center',
   },
   microLabel: {
     fontFamily: fontFamily.bold,
@@ -164,11 +176,21 @@ const styles = StyleSheet.create({
     borderLeftWidth: 3,
     borderLeftColor: colors.brandPrimary,
   },
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+  // Mobile-first: stacked text above a full-width CTA by default. At
+  // WIDE_BREAKPOINT the card switches to a row so the CTA sits beside the
+  // text instead of below it, using the extra horizontal room desktop has.
+  cardRow: {
+    flexDirection: 'column',
     gap: space[4],
+  },
+  cardRowWide: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: space[6],
+  },
+  cardText: {
+    flex: 1,
   },
   cardTitle: {
     fontFamily: fontFamily.extrabold,
@@ -179,48 +201,34 @@ const styles = StyleSheet.create({
     fontFamily: fontFamily.regular,
     fontSize: fontSize.bodyS,
     color: colors.textSecondary,
+    marginTop: space[1],
   },
-  activeCount: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    minWidth: 50,
-  },
-  activeNumber: {
-    fontFamily: fontFamily.extrabold,
-    fontSize: 24,
-    color: colors.brandPrimary,
-    lineHeight: leading(1, 24),
-  },
-  activeLabel: {
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.caption,
-    color: colors.textSecondary,
-    textAlign: 'center',
-  },
-  deepDiveLink: {
+  liveRow: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    flexWrap: 'wrap',
     marginTop: space[3],
   },
-  deepDiveLinkText: {
-    fontFamily: fontFamily.regular,
-    fontSize: fontSize.bodyS,
-    color: colors.textLink,
-    textDecorationLine: 'underline',
-  },
-  storyText: {
-    fontFamily: fontFamily.regular,
+  liveNumber: {
+    fontFamily: fontFamily.extrabold,
     fontSize: fontSize.bodyM,
-    color: colors.textPrimary,
-    lineHeight: leading(1.6, fontSize.bodyM),
-    marginBottom: space[6],
+    color: colors.brandPrimary,
   },
-  timelineHeading: {
+  liveLabel: {
     fontFamily: fontFamily.bold,
-    fontSize: fontSize.headingM,
-    color: colors.textPrimary,
-    lineHeight: leading(1.3, fontSize.headingM),
+    fontSize: fontSize.caption,
+    color: colors.brandPrimary,
+    marginLeft: space[1],
   },
-  cta: {
-    paddingHorizontal: space[6] + space[1],
-    paddingBottom: space[6],
+  liveCaption: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.caption,
+    color: colors.textTertiary,
+  },
+  ctaNarrow: {
+    marginTop: space[1],
+  },
+  ctaWide: {
+    flexShrink: 0,
   },
 });
