@@ -45,6 +45,19 @@ describe('LaunchScreen', () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
+  it('dispatches BEGIN when the story onboarding closes, so finishing it reaches Intention', async () => {
+    const dispatch = jest.fn();
+    await render(<LaunchScreen dispatch={dispatch} />);
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Tell me more' }));
+    await waitFor(() => expect(screen.getByTestId('story-onboarding')).toBeTruthy());
+
+    await fireEvent.press(screen.getByRole('button', { name: 'Skip story' }));
+
+    expect(dispatch).toHaveBeenCalledWith({ type: 'BEGIN' });
+    expect(screen.queryByTestId('story-onboarding')).toBeNull();
+  });
+
   it('dispatches OPEN_ABOUT when the info affordance is tapped', async () => {
     const dispatch = jest.fn();
     await render(<LaunchScreen dispatch={dispatch} />);

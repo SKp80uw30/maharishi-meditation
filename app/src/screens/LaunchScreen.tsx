@@ -81,7 +81,18 @@ export default function LaunchScreen({ dispatch }: { dispatch: Dispatch<AppActio
         </View>
       </Animated.View>
 
-      <StoryOnboarding isOpen={isStoryOpen} onClose={() => setIsStoryOpen(false)} />
+      {/* onClose fires for every exit from the modal alike — Beat 5's "Begin
+       * your session", its own "Skip story", and the corner X — so it also
+       * dispatches BEGIN. Without that, leaving the modal just re-reveals
+       * this same Launch screen, trapping anyone who taps "Tell me more" in
+       * a loop with no way to actually reach Intention. */}
+      <StoryOnboarding
+        isOpen={isStoryOpen}
+        onClose={() => {
+          setIsStoryOpen(false);
+          dispatch({ type: 'BEGIN' });
+        }}
+      />
     </ScreenContainer>
   );
 }
