@@ -78,7 +78,9 @@ export default function StoryOnboarding({ isOpen, onClose }: Props) {
         {currentBeat === 1 && <StoryBeat2 />}
         {currentBeat === 2 && <StoryBeat3 />}
         {currentBeat === 3 && <StoryBeat4 />}
-        {currentBeat === 4 && <StoryBeat5 onContinue={handleNext} onSkip={handleSkip} />}
+        {currentBeat === 4 && (
+          <StoryBeat5 onContinue={handleNext} onSkip={handleSkip} onBack={handlePrevious} />
+        )}
 
         {/* Bottom bar: progress dots + navigation, for beats 1-4. The final
          * beat carries its own CTA block, so it gets no bar. */}

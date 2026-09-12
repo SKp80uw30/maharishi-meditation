@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { View, Text, StyleSheet, Animated } from 'react-native';
+import { View, Text, StyleSheet, Animated, Pressable } from 'react-native';
 import { BlobMark, Button } from '../index';
 import { worldPeaceApi } from '../../api/worldPeace';
 import { palette, colors } from '../../theme/colors';
@@ -10,13 +10,14 @@ import { useReducedMotion } from '../../hooks/useReducedMotion';
 type Props = {
   onContinue: () => void;
   onSkip: () => void;
+  onBack: () => void;
 };
 
 /**
  * Beat 5: "Now It's You" — Call to action with live meditator count
  * Shows user's role in the constellation; live badge connects to collective
  */
-export default function StoryBeat5({ onContinue, onSkip }: Props) {
+export default function StoryBeat5({ onContinue, onSkip, onBack }: Props) {
   // null = no estimate available (it's optional in the API contract, and the
   // request can simply fail). A real zero is treated the same way below —
   // neither should render "0 people are meditating".
@@ -89,6 +90,15 @@ export default function StoryBeat5({ onContinue, onSkip }: Props) {
 
       {/* CTAs */}
       <View style={styles.buttonGroup}>
+        <Pressable
+          onPress={onBack}
+          style={styles.backLink}
+          accessible
+          accessibilityRole="button"
+          accessibilityLabel="Previous story beat"
+        >
+          <Text style={styles.backLinkText}>← Back</Text>
+        </Pressable>
         <Button label="Begin your session" onPress={onContinue} fullWidth />
         <Button label="Skip story" onPress={onSkip} variant="outline" fullWidth />
       </View>
@@ -157,5 +167,15 @@ const styles = StyleSheet.create({
   buttonGroup: {
     width: '100%',
     gap: space[3],
+  },
+  backLink: {
+    alignSelf: 'center',
+    marginBottom: space[1],
+  },
+  backLinkText: {
+    fontFamily: fontFamily.regular,
+    fontSize: fontSize.bodyS,
+    color: colors.textLink,
+    textDecorationLine: 'underline',
   },
 });

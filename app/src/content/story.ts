@@ -14,7 +14,25 @@ export const narrative = {
   // One-line premises for embedding in each screen
   // Present-tense, participatory language that makes users feel the collective presence,
   // not just read about it. Grounded in research but expressed as immediate experience.
-  launchSubtitle: 'A shared breath. Fifty years of proof.',
+  /** Micro-label above the Launch title — names what the app *is* in a few words.
+   * Mirrors Intention's "Today's intention" micro-label so Launch reads as part
+   * of the same system, not a new pattern. */
+  launchEyebrow: 'A meditation for World Peace',
+
+  /** Launch's main copy: the origin story's opening beat, shown as the first
+   * thing on every launch, not a one-time onboarding moment. This app exists
+   * because of that field, and the point is the daily reminder of it — not a
+   * fact you're told once and expected to remember. The fuller account (more
+   * studies, the full fifty-year arc) still lives one tap away via Intention's
+   * "Go deeper" and the About screen. */
+  launchSubtitle:
+    'In 1973, something unexpected happened in Washington DC. A group of 400 meditators gathered with a single intention: to meditate for peace — then the crime rate fell 16%.',
+
+  /** Bridges Launch's historical hook to its two CTAs below — deliberately
+   * neutral between "Tell me more" and "Skip story and get started", since
+   * both lead to the same place. */
+  launchCtaCaption:
+    'This app is designed as an extension of that experiment — continuing it, and expanding on its results.',
 
   intentionSupportingLine:
     'Right now, others are meditating on the same intention. Your practice joins theirs into one coherent field.',
